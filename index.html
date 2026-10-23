@@ -70,13 +70,12 @@
   .canvas-box{position:relative;height:320px}
 
   /* Table */
-  .tbl-wrap{background:#fff;border:1px solid var(--rule);border-radius:10px;margin:0 34px 26px;overflow:hidden}
-  .tbl-wrap .t-head{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--rule);flex-wrap:wrap}
-  .tbl-wrap .t-head h2{font-size:15px;font-weight:700;color:var(--navy);margin:0}
-  .tbl-wrap .t-head .cnt{font-size:12.5px;color:var(--ink-3)}
-  .tbl-wrap .t-head .right{margin-left:auto;display:flex;gap:8px;align-items:center}
-  .tbl-wrap .t-head .right input{font:inherit;font-size:13px;padding:6px 10px;border:1px solid var(--rule);border-radius:6px;min-width:200px}
-  table{width:100%;border-collapse:collapse;font-size:13px}
+  .t-head{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--rule);flex-wrap:wrap}
+  .t-head h2{font-size:15px;font-weight:700;color:var(--navy);margin:0}
+  .t-head .cnt{font-size:12.5px;color:var(--ink-3)}
+  .t-head .right{margin-left:auto;display:flex;gap:8px;align-items:center}
+  .t-head .right input{font:inherit;font-size:13px;padding:6px 10px;border:1px solid var(--rule);border-radius:6px;min-width:200px}
+  /* Table — deprecated base, overridden by 2-col rules below */
   thead th{position:sticky;top:0;background:var(--band);color:var(--ink-2);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;text-align:left;padding:8px 10px;border-bottom:2px solid var(--rule);white-space:nowrap;cursor:pointer;user-select:none;z-index:2}
   thead th.num,tbody td.num{text-align:right;font-variant-numeric:tabular-nums}
   thead th.col-net{background:#EEF4FB;color:var(--steel)}
@@ -145,9 +144,51 @@
   .loading .dot:nth-child(3){animation-delay:.4s}
   @keyframes pulse{0%,100%{opacity:.3}50%{opacity:1}}
 
+  /* 2-col layout below chart */
+  .two-col-wrapper{display:flex;gap:16px;margin:0 34px 26px}
+  .two-col-wrapper .col-left{flex:0 0 40%;min-width:0}
+  .two-col-wrapper .col-right{flex:1;min-width:0}
+  .two-col-wrapper .col-box{background:#fff;border:1px solid var(--rule);border-radius:10px;overflow:hidden}
+  .two-col-wrapper .col-right .col-box{display:flex;flex-direction:column;max-height:520px}
+  .two-col-wrapper .col-right .col-box .t-head{flex-shrink:0}
+  .two-col-wrapper .col-right .col-box .tbl-scroll{overflow-y:auto;flex:1;overflow-x:auto}
+
+  /* Filter KPI box */
+  .filter-box{padding:16px 18px}
+  .filter-box h3{font-size:14px;font-weight:700;color:var(--navy);margin:0 0 12px}
+  .filter-box .f-row{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:5px 0;border-bottom:1px solid var(--rule-2)}
+  .filter-box .f-row .k{color:var(--ink-3);font-weight:600;min-width:90px}
+  .filter-box .f-row .v{color:var(--ink)}
+  .filter-box .f-kpi{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+  .filter-box .f-kpi .fk{background:var(--band);padding:10px;border-radius:8px;text-align:center}
+  .filter-box .f-kpi .fk .val{font-size:22px;font-weight:700;color:var(--navy);line-height:1.1}
+  .filter-box .f-kpi .fk .val.neg{color:var(--neg)}
+  .filter-box .f-kpi .fk .val.pos{color:var(--pos)}
+  .filter-box .f-kpi .fk .lbl{font-size:10.5px;color:var(--ink-3);margin-top:2px;text-transform:uppercase;font-weight:700;letter-spacing:.03em}
+
+  /* Table fixed layout + header wrap */
+  table{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
+  thead th{position:sticky;top:0;background:var(--band);color:var(--ink-2);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;text-align:left;padding:7px 8px;border-bottom:2px solid var(--rule);white-space:normal;word-wrap:break-word;overflow-wrap:break-word;cursor:pointer;user-select:none;z-index:2;line-height:1.25}
+  thead th.num,tbody td.num{text-align:right;font-variant-numeric:tabular-nums}
+  thead th.col-net{background:#EEF4FB;color:var(--steel)}
+  thead th.col-before{background:#FFF8F0;color:#8A6600}
+  thead th.col-after{background:#F0FFF4;color:var(--pos)}
+  tbody td{padding:6px 8px;border-bottom:1px solid var(--rule-2);vertical-align:middle;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  tbody tr:hover{background:var(--band)}
+
+  /* Version badge */
+  .ver-badge{display:inline-block;font-size:11px;font-weight:600;color:#fff;background:var(--navy);padding:2px 10px;border-radius:10px;margin-left:10px;vertical-align:middle;letter-spacing:.02em}
+
   @media (max-width:900px){
     .kpis{grid-template-columns:repeat(2,1fr)}
-    .mast,.fbar,.vtabs,.kpis,.chart-wrap,.tbl-wrap,.foot,.mt-bar,.loading{padding-left:16px;padding-right:16px}
+    .mast,.fbar,.vtabs,.kpis,.chart-wrap,.two-col-wrapper,.foot,.mt-bar,.loading{padding-left:16px;padding-right:16px}
+    .two-col-wrapper{margin-left:16px;margin-right:16px}
+  }
+  @media (max-width:700px){
+    .two-col-wrapper{flex-direction:column}
+    .two-col-wrapper .col-left{flex:auto}
+    .two-col-wrapper .col-right{flex:auto}
+    .two-col-wrapper .col-right .col-box{max-height:420px}
   }
   @media (max-width:560px){
     .kpis{grid-template-columns:1fr 1fr}
@@ -161,7 +202,7 @@
 
   <header class="mast">
     <div class="kicker">Winmart+ Miền Bắc · LFL W0–W52 · W8 baseline · 282 CH · 13 Tỉnh</div>
-    <h1>Cannibalization — Competitor Analysis</h1>
+    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v3.0 · 23/10/2026</span></h1>
     <p class="sub">Phân tích tác động (impact) của đối thủ BHX / WCM / BHX+WCM — Before/After &amp; Control breakdown · Số liệu SPD &amp; BPD</p>
     <div class="meta" id="meta-line"></div>
   </header>
@@ -205,13 +246,24 @@
     <div class="canvas-box"><canvas id="chart"></canvas></div>
   </div>
 
-  <div class="tbl-wrap">
-    <div class="t-head">
-      <h2 id="tbl-title">Danh sách</h2>
-      <span class="cnt" id="tbl-cnt"></span>
-      <div class="right"><span class="gdv-toggle" id="gdv-toggle"></span><input id="tbl-search" type="search" placeholder="Tìm kiếm…" autocomplete="off"></div>
+  <div class="two-col-wrapper">
+    <div class="col-left">
+      <div class="col-box filter-box" id="filter-kpi-box">
+        <h3>📊 Theo Filter</h3>
+        <div id="filter-summary"></div>
+        <div class="f-kpi" id="filter-kpis"></div>
+      </div>
     </div>
-    <div style="overflow-x:auto;max-height:560px;overflow-y:auto"><table id="tbl"></table></div>
+    <div class="col-right">
+      <div class="col-box">
+        <div class="t-head">
+          <h2 id="tbl-title">Danh sách</h2>
+          <span class="cnt" id="tbl-cnt"></span>
+          <div class="right"><span class="gdv-toggle" id="gdv-toggle"></span><input id="tbl-search" type="search" placeholder="Tìm kiếm…" autocomplete="off"></div>
+        </div>
+        <div class="tbl-scroll"><table id="tbl"></table></div>
+      </div>
+    </div>
   </div>
 
   <div class="foot">
@@ -445,6 +497,40 @@ function buildThreatTree(codes){
   return nodes;
 }
 
+/* ---------- Filter KPI box (left column) ---------- */
+function renderFilterKPI(codes){
+  const aggs = codes.map(c=>storeAgg(c));
+  const ns = mean(aggs.map(a=>a.ns).filter(v=>v!=null));
+  const ps = mean(aggs.map(a=>a.ps).filter(v=>v!=null));
+  const nb = mean(aggs.map(a=>a.nb).filter(v=>v!=null));
+  const pb = mean(aggs.map(a=>a.pb).filter(v=>v!=null));
+  const count = codes.length;
+  const bsAll = mean(aggs.map(a=>a.bs).filter(v=>v!=null));
+  const metricLabel = state.tableMetric==='spd'?'SPD':'BPD';
+  const netVal = state.tableMetric==='spd'?ns:nb;
+  const netPct = state.tableMetric==='spd'?ps:pb;
+  const m = state.tableMetric;
+  const unit = m==='spd'?'SPD (tr/ngày)':'BPD (bill/ngày)';
+
+  // Filter summary rows
+  const filtRows = [
+    ['View', VIEWS.find(v=>v[0]===state.view)?.[1] || state.view],
+    ['Loại đối thủ', state.threat==='all'?'Tất cả':state.threat],
+    ['Khoảng cách', state.dist==='all'?'Tất cả':state.dist],
+    ['Tỉnh/TP', state.prov==='all'?'Tất cả':state.prov],
+    ['Tuần', `${W[state.wfrom]} – ${W[state.wto]}`],
+    ['Chỉ số', unit]
+  ];
+  $('#filter-summary').innerHTML = filtRows.map(([k,v])=>`<div class="f-row"><span class="k">${k}</span><span class="v">${v}</span></div>`).join('');
+
+  $('#filter-kpis').innerHTML = `
+    <div class="fk"><div class="val ${signCls(netPct)}">${fmtPct(netPct)}</div><div class="lbl">NET % Impact ${metricLabel}</div></div>
+    <div class="fk"><div class="val ${signCls(netVal)}">${fmt(netVal)}</div><div class="lbl">NET Imp ${metricLabel}</div></div>
+    <div class="fk"><div class="val" style="color:var(--navy)">${count}</div><div class="lbl">Số CH affected</div></div>
+    <div class="fk"><div class="val" style="color:var(--ink-2)">${fmtNum(bsAll,1)}</div><div class="lbl">Avg Base ${metricLabel}</div></div>
+  `;
+}
+
 /* ---------- KPI ---------- */
 function renderKPI(codes){
   const aggs = codes.map(c=>storeAgg(c));
@@ -472,8 +558,10 @@ function renderChart(codes){
   const labels = threat.map(s=>s.w);
   const threatData = threat.map(s=>s.v);
   const controlData = control.map(s=>s.v);
-  const cThreat = '#B42318';   // đỏ = Threat
-  const cControl = '#1B7A4A';  // xanh lá = Control
+  const netData = threat.map((s,i)=> (s.v!=null && control[i].v!=null) ? (s.v - control[i].v) : null);
+  const cThreat = '#d71920';   // đỏ = Threat
+  const cControl = '#16a34a';  // xanh lá = Control
+  const cNet = '#2980b9';      // xanh dương = NET
   const yFmt = state.chartMetric==='pct' ? (v=>v.toFixed(1)+'%') : (v=>v.toFixed(2));
   const unit = state.chartMetric==='spd' ? 'SPD (tr/ngày)' : (state.chartMetric==='bpd' ? 'BPD (bill/ngày)' : '%');
   $('#chart-title').textContent = 'Impact theo tuần — Threat vs Control (' + unit + ')';
@@ -503,6 +591,19 @@ function renderChart(codes){
         borderDash: [6,4],
         pointRadius: labels.length>20?0:2.5,
         pointBackgroundColor: cControl,
+        fill: false,
+        tension: 0.25,
+        spanGaps: true
+      },
+      {
+        label: 'NET',
+        data: netData,
+        borderColor: cNet,
+        backgroundColor: cNet+'22',
+        borderWidth: 2.5,
+        borderDash: [3,3],
+        pointRadius: labels.length>20?0:3,
+        pointBackgroundColor: cNet,
         fill: false,
         tension: 0.25,
         spanGaps: true
@@ -564,8 +665,8 @@ function renderTable(){
   };
   walk(nodes, 0);
   const head = isThreat
-    ? `<thead><tr><th></th><th>Tên Site</th><th>Ngày mở</th><th>Khoảng cách</th><th>Block khoảng cách</th><th class="num col-net">NET Impact SPD</th><th class="num col-net">NET % Impact</th></tr></thead>`
-    : `<thead><tr><th></th><th>Tên</th><th class="num">Số CH</th><th class="num col-net">NET Imp ${unit}</th><th class="num col-net">NET % Impact</th></tr></thead>`;
+    ? `<colgroup><col style="width:32px"><col style="width:18%"><col style="width:10%"><col style="width:10%"><col style="width:12%"><col style="width:23%"><col style="width:24%"></colgroup><thead><tr><th></th><th>Tên Site</th><th>Ngày mở</th><th>Khoảng cách</th><th>Block KC</th><th class="num col-net">NET Imp SPD</th><th class="num col-net">NET % Impact</th></tr></thead>`
+    : `<colgroup><col style="width:32px"><col style="width:42%"><col style="width:10%"><col style="width:23%"><col style="width:23%"></colgroup><thead><tr><th></th><th>Tên</th><th class="num">SL CH</th><th class="num col-net">NET Imp ${unit}</th><th class="num col-net">NET % Impact</th></tr></thead>`;
   $('#tbl').innerHTML = head + `<tbody>${body.join('')}</tbody>`;
   $('#tbl-cnt').textContent = `${count} dòng`;
   $('#tbl').querySelectorAll('tr.group').forEach(tr=>{
@@ -744,7 +845,8 @@ function drawStoreChart(code){
     }
   }
   const unit = isS ? 'tr/ngày' : 'bill/ngày';
-  const cThreat = '#B42318', cControl = '#1B7A4A';
+  const cThreat = '#d71920', cControl = '#16a34a', cNet = '#2980b9';
+  const net = threat.map((t,i)=>(t!=null && control[i]!=null) ? (t - control[i]) : null);
   setTimeout(()=>{
     const ctx = $('#d-chart');
     if(!ctx) return;
@@ -752,7 +854,8 @@ function drawStoreChart(code){
       type:'line',
       data:{labels, datasets:[
         {label:'Threat', data:threat, borderColor:cThreat, backgroundColor:cThreat+'22', borderWidth:2, pointRadius:0, fill:false, tension:0.25, spanGaps:true},
-        {label:'Control', data:control, borderColor:cControl, backgroundColor:cControl+'22', borderWidth:2, borderDash:[6,4], pointRadius:0, fill:false, tension:0.25, spanGaps:true}
+        {label:'Control', data:control, borderColor:cControl, backgroundColor:cControl+'22', borderWidth:2, borderDash:[6,4], pointRadius:0, fill:false, tension:0.25, spanGaps:true},
+        {label:'NET', data:net, borderColor:cNet, backgroundColor:cNet+'22', borderWidth:2.5, borderDash:[3,3], pointRadius:0, fill:false, tension:0.25, spanGaps:true}
       ]},
       options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:true,labels:{usePointStyle:true,boxWidth:8,color:'#1A1F26',font:{weight:'600'}}},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.parsed.y==null?'—':c.parsed.y.toFixed(2)+' '+unit}`}}},scales:{x:{ticks:{maxTicksLimit:10,color:'#7C8592'},grid:{display:false}},y:{ticks:{color:'#7C8592'},grid:{color:'#E4E9EF'}}}}
     });
@@ -842,16 +945,17 @@ function renderAll(){
   renderTabs();
   if(state.view==='rules'){ renderRules(); return; }
   // Show elements hidden by rules tab
-  ['#kpis','.chart-wrap','.tbl-wrap','#meta-line'].forEach(s=>{
+  ['#kpis','.chart-wrap','.two-col-wrapper','#meta-line'].forEach(s=>{
     const el = document.querySelector(s); if(el) el.style.display='';
   });
   const rulesEl = document.getElementById('rules-section');
   if(rulesEl) rulesEl.style.display = 'none';
   
   const codes = filteredStores();
-  $('#tbl-title').textContent = VIEWS.find(v=>v[0]===state.view)[1];
+  $('#tbl-title').textContent = '🏪 ' + VIEWS.find(v=>v[0]===state.view)[1];
   renderKPI(codes);
   renderChart(codes);
+  renderFilterKPI(codes);
   renderTable();
   const metricLabel = state.tableMetric==='spd'?'SPD (tr/ngày)':'BPD (bill/ngày)';
   $('#meta-line').innerHTML = `<span>${DATA.meta.n_stores} cửa hàng</span><span>${DATA.meta.generated}</span><span>Threat: ${state.threat==='all'?'Tất cả':state.threat}</span><span>Khoảng cách: ${state.dist==='all'?'Tất cả':state.dist}</span><span>Tuần: ${W[state.wfrom]}–${W[state.wto]}</span><span>Chỉ số: ${metricLabel}</span>`;
@@ -860,7 +964,7 @@ function renderAll(){
 /* ---------- RULES TAB ---------- */
 function renderRules(){
   // Ẩn các phần không liên quan
-  ['#kpis','.chart-wrap','.tbl-wrap','#meta-line'].forEach(s=>{
+  ['#kpis','.chart-wrap','.two-col-wrapper','#meta-line'].forEach(s=>{
     const el = document.querySelector(s); if(el) el.style.display='none';
   });
   $('#tbl-title').textContent = '📋 Phương pháp & Cách tính';
@@ -999,8 +1103,8 @@ function renderRules(){
   if(!rulesEl){
     rulesEl = document.createElement('div');
     rulesEl.id = 'rules-section';
-    const tblWrap = document.querySelector('.tbl-wrap');
-    if(tblWrap) tblWrap.parentNode.insertBefore(rulesEl, tblWrap);
+    const twoCol = document.querySelector('.two-col-wrapper');
+    if(twoCol) twoCol.parentNode.insertBefore(rulesEl, twoCol);
   }
   rulesEl.innerHTML = ruleHTML;
   rulesEl.style.display = 'block';
