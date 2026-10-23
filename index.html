@@ -73,7 +73,7 @@
   .mt-bar .lbl{font-size:11px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.04em;margin-right:4px}
 
   /* HÀNG 2 (full width): KPI cards — 1 dòng ngang 4 cards */
-  .kpi-row-full{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:14px 34px;border-bottom:1px solid var(--rule);background:var(--band)}
+  .kpi-row-full{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;background:transparent}
   .kpi-card{background:var(--paper);border-radius:8px;padding:12px 14px;text-align:center;box-shadow:0 1px 2px rgba(0,0,0,.04)}
   .kpi-card .klab{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--ink-3);margin-bottom:2px}
   .kpi-card .kval{font-size:24px;font-weight:700;color:var(--navy);line-height:1.15;letter-spacing:-.02em}
@@ -209,7 +209,7 @@
 
   <header class="mast">
     <div class="kicker">Winmart+ Miền Bắc · LFL W0–W52 · W8 baseline · 282 CH · 13 Tỉnh</div>
-    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.15 · 23/10/2026</span></h1>
+    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.16 · 23/10/2026</span></h1>
     <p class="sub">Phân tích tác động (impact) của đối thủ BHX / WCM / BHX+WCM — Before/After &amp; Control breakdown · Số liệu SPD &amp; BPD</p>
     <div class="meta" id="meta-line"></div>
   </header>
@@ -239,13 +239,12 @@
     </div>
   </div>
 
-  <!-- HÀNG 2 (full width): KPI Cards — 1 dòng ngang -->
-  <div class="kpi-row-full" id="kpi-section"></div>
-
-  <!-- HÀNG 3: 2 cột 50/50 -->
+  <!-- HÀNG 2: 2 cột 50/50 -->
   <div class="content-grid" id="content-grid">
-    <!-- Cột trái: Affect by Stores + Affect by selected threat -->
+    <!-- Cột trái: KPI Cards + Affect by Stores + Affect by selected threat -->
     <div class="col-l" id="col-left">
+      <!-- 4 KPI box text -->
+      <div class="kpi-row-full" id="kpi-section"></div>
       <!-- Trên: Section 1 — Bảng theo Tỉnh (không drill tới CH) -->
       <div class="panel has-scroll" id="cell-stores">
         <div class="panel-title" id="sec1-title">🏛️ Theo Tỉnh → Huyện</div>
