@@ -51,10 +51,10 @@
   .mt-bar .seg button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
   .mt-bar .lbl{font-size:11px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.04em;margin-right:8px}
 
-  /* ============ 2x2 DASHBOARD GRID ============ */
+  /* ============ 2x2 DASHBOARD GRID (v4.1) ============ */
   .dashboard-grid {
     display: grid;
-    grid-template-columns: 1.7fr 1fr;
+    grid-template-columns: repeat(10, 1fr);
     gap: 14px;
     padding: 14px 34px 26px;
   }
@@ -77,12 +77,12 @@
     flex-shrink: 0;
   }
 
-  /* Top-Left: Chart */
-  .cell-chart { grid-row: 1; grid-column: 1; }
+  /* Bottom-Right: Full NET impact line chart */
+  .cell-chart { grid-row: 2; grid-column: span 5; }
   .cell-chart .canvas-box { position: relative; height: 340px; flex: 1; }
 
-  /* Top-Right: KPI + Bar chart */
-  .cell-kpi { grid-row: 1; grid-column: 2; gap: 10px; }
+  /* Top-Right: KPI + NET weekly bar chart */
+  .cell-kpi { grid-row: 1; grid-column: span 4; gap: 10px; }
   .kpi-section {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -122,17 +122,18 @@
   }
   .threat-bar-section .canvas-box-small {
     position: relative;
-    height: 180px;
+    height: 420px;
     flex: 1;
   }
 
-  /* Bottom-Left: Tree table */
+  /* Bottom-Left: Affect by stores (tree table + filters) */
   .cell-stores {
-    grid-row: 2; grid-column: 1;
-    max-height: 520px;
-    padding: 10px 0 0 0;
+    grid-row: 1; grid-column: span 6;
+    max-height: 640px;
+    padding: 12px 0 0 0;
   }
   .cell-stores .cell-title { padding: 0 16px; }
+  .cell-stores .cell-fbar { padding: 10px 16px; }
   .cell-stores .t-head {
     display: flex; align-items: center; gap: 10px;
     padding: 8px 16px; border-bottom: 1px solid var(--rule);
@@ -147,9 +148,9 @@
   }
   .cell-stores .tbl-scroll { overflow-y: auto; flex: 1; overflow-x: auto; }
 
-  /* Bottom-Right: Threat detail store list */
+  /* Bottom-Left: Affect by selected threat (store list) */
   .cell-threat-detail {
-    grid-row: 2; grid-column: 2;
+    grid-row: 2; grid-column: span 5;
     max-height: 520px;
     padding: 10px 0 0 0;
   }
@@ -283,17 +284,18 @@
 
   /* Responsive */
   @media (max-width: 1100px) {
-    .dashboard-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .dashboard-grid { gap: 10px; }
     .kpi-card .kval { font-size: 20px; }
   }
   @media (max-width: 800px) {
     .dashboard-grid { grid-template-columns: 1fr; gap: 12px; }
-    .cell-chart,.cell-kpi,.cell-stores,.cell-threat-detail { grid-column: 1; }
-    .cell-chart { grid-row: 1; } .cell-kpi { grid-row: 2; }
-    .cell-stores { grid-row: 3; max-height: 420px; }
-    .cell-threat-detail { grid-row: 4; max-height: 420px; }
+    .cell-chart,.cell-kpi,.cell-stores,.cell-threat-detail { grid-column: 1 / -1; max-height: none; }
+    .cell-stores { grid-row: 1; }
+    .cell-kpi { grid-row: 2; }
+    .cell-threat-detail { grid-row: 3; max-height: 420px; }
+    .cell-chart { grid-row: 4; }
     .canvas-box { height: 260px; }
-    .threat-bar-section .canvas-box-small { height: 160px; }
+    .threat-bar-section .canvas-box-small { height: 320px; }
     .mast,.fbar,.vtabs,.dashboard-grid,.foot { padding-left: 14px; padding-right: 14px; }
   }
 </style>
@@ -303,7 +305,7 @@
 
   <header class="mast">
     <div class="kicker">Winmart+ Miền Bắc · LFL W0–W52 · W8 baseline · 282 CH · 13 Tỉnh</div>
-    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.0 · 23/10/2026</span></h1>
+    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.1 · 23/10/2026</span></h1>
     <p class="sub">Phân tích tác động (impact) của đối thủ BHX / WCM / BHX+WCM — Before/After &amp; Control breakdown · Số liệu SPD &amp; BPD</p>
     <div class="meta" id="meta-line"></div>
   </header>
@@ -315,48 +317,20 @@
 
   <div class="vtabs" id="vtabs"></div>
 
-  <div class="fbar" id="fbar">
-    <div class="fld"><label>Loại đối thủ</label><select id="f-threat"></select></div>
-    <div class="fld"><label>Khoảng cách</label><select id="f-dist"></select></div>
-    <div class="fld"><label>Tỉnh / TP</label><select id="f-prov"></select></div>
-    <div class="fld"><label>Từ tuần</label><select id="f-wfrom"></select></div>
-    <div class="fld"><label>Đến tuần</label><select id="f-wto"></select></div>
-    <div class="spacer"></div>
-    <button class="btn" id="btn-reset">↺ Đặt lại</button>
-  </div>
-
-  <!-- 2x2 GRID LAYOUT -->
+  <!-- 2x2 GRID LAYOUT (v4.1) -->
   <div class="dashboard-grid" id="dashboard-grid">
-    <!-- TOP-LEFT: Section 1 — Line Chart -->
-    <div class="grid-cell cell-chart" id="cell-chart">
-      <div class="mt-bar">
-        <span class="lbl">Chỉ số:</span>
-        <div class="seg" id="metric-seg">
-          <button data-m="spd" class="on">SPD (tr/ngày)</button>
-          <button data-m="bpd">BPD (bill/ngày)</button>
-        </div>
-        <div class="seg" id="chart-seg" style="margin-left:auto">
-          <button data-m="spd" class="on">Impact SPD</button>
-          <button data-m="bpd">Impact BPD</button>
-          <button data-m="pct">% Impact</button>
-        </div>
-      </div>
-      <div class="cell-title" id="chart-title">Section 1 — NET Impact W0–W52: Threat vs Control</div>
-      <div class="canvas-box"><canvas id="chart"></canvas></div>
-    </div>
-
-    <!-- TOP-RIGHT: KPI Cards + Bar Chart -->
-    <div class="grid-cell cell-kpi" id="cell-kpi">
-      <div class="cell-title">Các chỉ số highlight</div>
-      <div class="kpi-section" id="kpi-section"></div>
-      <div class="cell-title" style="margin-top:0">Affect by All Threat</div>
-      <div class="threat-bar-section">
-        <div class="canvas-box-small"><canvas id="threat-bar-chart"></canvas></div>
-      </div>
-    </div>
-
-    <!-- BOTTOM-LEFT: Section 2 — Affect by Stores -->
+    <!-- TOP-LEFT: Affect by Stores (filters + tree table) -->
     <div class="grid-cell cell-stores" id="cell-stores">
+      <div class="cell-title">Affect by Stores</div>
+      <div class="fbar cell-fbar" id="fbar">
+        <div class="fld"><label>Loại đối thủ</label><select id="f-threat"></select></div>
+        <div class="fld"><label>Khoảng cách</label><select id="f-dist"></select></div>
+        <div class="fld"><label>Tỉnh / TP</label><select id="f-prov"></select></div>
+        <div class="fld"><label>Từ tuần</label><select id="f-wfrom"></select></div>
+        <div class="fld"><label>Đến tuần</label><select id="f-wto"></select></div>
+        <div class="spacer"></div>
+        <button class="btn" id="btn-reset">↺ Đặt lại</button>
+      </div>
       <div class="t-head">
         <h2 id="tbl-title">🏪 Cửa hàng</h2>
         <span class="cnt" id="tbl-cnt"></span>
@@ -366,13 +340,43 @@
       <div class="tbl-scroll"><table id="tbl"></table></div>
     </div>
 
-    <!-- BOTTOM-RIGHT: Affect by selected threat -->
+    <!-- TOP-RIGHT: KPI cards + NET weekly bar chart -->
+    <div class="grid-cell cell-kpi" id="cell-kpi">
+      <div class="mt-bar">
+        <span class="lbl">Chỉ số:</span>
+        <div class="seg" id="metric-seg">
+          <button data-m="spd" class="on">SPD (tr/ngày)</button>
+          <button data-m="bpd">BPD (bill/ngày)</button>
+        </div>
+      </div>
+      <div class="cell-title" style="margin-top:0">Các chỉ số highlight</div>
+      <div class="kpi-section" id="kpi-section"></div>
+      <div class="cell-title" style="margin-top:0">NET Impact theo tuần (W0–W52)</div>
+      <div class="threat-bar-section">
+        <div class="canvas-box-small"><canvas id="threat-bar-chart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- BOTTOM-LEFT: Affect by selected threat (store list) -->
     <div class="grid-cell cell-threat-detail" id="cell-threat-detail">
       <div class="t-head">
-        <h2 id="td-title">Danh sách CH bị ảnh hưởng</h2>
+        <h2 id="td-title">Affect by selected threat</h2>
         <span class="cnt" id="td-cnt"></span>
       </div>
       <div class="tbl-scroll"><table id="td-tbl"></table></div>
+    </div>
+
+    <!-- BOTTOM-RIGHT: Full NET impact line chart -->
+    <div class="grid-cell cell-chart" id="cell-chart">
+      <div class="mt-bar">
+        <span class="lbl">Chỉ số:</span>
+        <div class="seg" id="chart-seg" style="margin-left:auto">
+          <button data-m="spd" class="on">SPD (tr/ngày)</button>
+          <button data-m="bpd">BPD (bill/ngày)</button>
+        </div>
+      </div>
+      <div class="cell-title" id="chart-title">Chart NET Impact đầy đủ — W0–W52</div>
+      <div class="canvas-box"><canvas id="chart"></canvas></div>
     </div>
   </div>
 
@@ -620,57 +624,57 @@ function renderKPISection(codes){
   `;
 }
 
-/* ============ THREAT BAR CHART (top-right bottom) ============ */
-let threatBarChart = null;
-function renderThreatBarChart(codes){
-  // Aggregate NET Impact by threat type (independent of threat filter)
-  const groups = { BHX: [], WCM: [], 'BHX + WCM': [] };
-  // Use all stores (not just filtered) for the bar chart
-  const allCodes = [];
-  for(const code in DATA.stores){
-    const s = DATA.stores[code];
-    if(state.dist!=='all' && s.d!==state.dist) continue;
-    if(state.prov!=='all' && s.p!==state.prov) continue;
-    allCodes.push(code);
-  }
-  for(const c of allCodes){
-    const t = DATA.stores[c].t;
-    if(groups[t]){
-      const a = storeAgg(c);
-      const v = state.tableMetric==='spd' ? a.ns : a.nb;
-      if(v!=null) groups[t].push(v);
+/* ============ NET WEEKLY BAR CHART (top-right) ============ */
+let netWeeklyBar = null;
+function renderNetWeeklyBar(codes){
+  const m = state.tableMetric;
+  // Aggregate NET impact by week (W0–W52) across filtered stores
+  const netByWeek = [];
+  for(let w=0; w<53; w++){
+    const vals = [];
+    for(const c of codes){
+      const s = DATA.series[c];
+      if(!s) continue;
+      let t = null, ct = null;
+      if(m==='spd'){
+        if(s.as[w]!=null && s.bs[w]!=null) t = s.as[w]-s.bs[w];
+        if(s.cx[w]!=null && s.cs[w]!=null) ct = s.cx[w]-s.cs[w];
+      } else {
+        if(s.ab[w]!=null && s.bb[w]!=null) t = s.ab[w]-s.bb[w];
+        if(s.cy[w]!=null && s.cb[w]!=null) ct = s.cy[w]-s.cb[w];
+      }
+      if(t!=null && ct!=null) vals.push(t - ct);
     }
+    netByWeek.push({ w: W[w], v: mean(vals), n: vals.length });
   }
-  const labels = ['BHX','WCM','BHX + WCM'];
-  const colors = ['#d71920','#2471a3','#8a6600'];
-  const data = labels.map(l => mean(groups[l]));
 
   const ctx = document.getElementById('threat-bar-chart');
-  if(threatBarChart) threatBarChart.destroy();
-  const unit = state.tableMetric==='spd' ? 'SPD (tr/ngày)' : 'BPD (bill/ngày)';
+  if(netWeeklyBar) netWeeklyBar.destroy();
+  const unit = m==='spd' ? 'SPD (tr/ngày)' : 'BPD (bill/ngày)';
 
-  threatBarChart = new Chart(ctx, {
+  netWeeklyBar = new Chart(ctx, {
     type: 'bar',
     data: {
-      labels,
+      labels: netByWeek.map(x=>x.w),
       datasets: [{
         label: 'NET Impact ' + unit,
-        data,
-        backgroundColor: colors,
-        borderRadius: 4,
+        data: netByWeek.map(x=>x.v),
+        backgroundColor: '#2980b9',
+        borderRadius: 1,
         borderWidth: 0
       }]
     },
     options: {
+      indexAxis: 'y',
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
         legend: { display: false },
-        tooltip: { callbacks: { label: c => `NET Impact: ${c.parsed.y!=null?c.parsed.y.toFixed(2):'—'}` } }
+        tooltip: { callbacks: { label: c => `NET Impact: ${c.parsed.x!=null?c.parsed.x.toFixed(2):'—'}` } }
       },
       scales: {
-        x: { grid: { display: false }, ticks: { color: '#7C8592', font: { weight: '600' } } },
-        y: { grid: { color: '#E4E9EF' }, ticks: { color: '#7C8592' } }
+        x: { grid: { color: '#E4E9EF' }, ticks: { color: '#7C8592' } },
+        y: { grid: { display: false }, ticks: { color: '#7C8592', font: { size: 9 }, autoSkip: true, maxTicksLimit: 20 } }
       }
     }
   });
@@ -689,7 +693,7 @@ function renderChart(codes){
   const cNet = '#2980b9';
   const yFmt = state.chartMetric==='pct' ? (v=>v.toFixed(1)+'%') : (v=>v.toFixed(2));
   const unit = state.chartMetric==='spd' ? 'SPD (tr/ngày)' : (state.chartMetric==='bpd' ? 'BPD (bill/ngày)' : '%');
-  $('#chart-title').textContent = 'Section 1 — NET Impact W0–W52: Threat vs Control (' + unit + ')';
+  $('#chart-title').textContent = 'Chart NET Impact đầy đủ — W0–W52: Threat vs Control (' + unit + ')';
   const ctx = $('#chart');
   if(chart) chart.destroy();
   chart = new Chart(ctx, {
@@ -819,7 +823,7 @@ function renderThreatDetailTable(){
   const unit = m==='spd' ? 'SPD (tr/ngày)' : 'BPD (bill/ngày)';
   $('#td-tbl').innerHTML = `<colgroup><col style="width:36%"><col style="width:11%"><col style="width:12%"><col style="width:20%"><col style="width:21%"></colgroup><thead><tr><th>Tên Site</th><th>Ngày mở</th><th>Khoảng cách</th><th class="num col-net">NET Imp ${unit}</th><th class="num col-net">NET %</th></tr></thead><tbody>${rows}</tbody>`;
   $('#td-cnt').textContent = `${codes.length} CH`;
-  $('#td-title').textContent = state.threat==='all' ? 'Tất cả CH bị ảnh hưởng' : `CH bị ảnh hưởng bởi: ${state.threat}`;
+  $('#td-title').textContent = state.threat==='all' ? 'Affect by selected threat — Tất cả' : `Affect by selected threat — ${state.threat}`;
   $('#td-tbl').querySelectorAll('tr.store-row').forEach(tr=>{
     tr.addEventListener('click', ()=>openDrawer(tr.dataset.code));
   });
@@ -1048,7 +1052,7 @@ function renderAll(){
 
   renderChart(codes);
   renderKPISection(codes);
-  renderThreatBarChart(codes);
+  renderNetWeeklyBar(codes);
   renderTable();
   renderThreatDetailTable();
 
