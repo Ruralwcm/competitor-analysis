@@ -51,10 +51,10 @@
   .mt-bar .seg button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
   .mt-bar .lbl{font-size:11px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.04em;margin-right:8px}
 
-  /* ============ 2x2 DASHBOARD GRID (v4.1) ============ */
+  /* ============ 2-COLUMN LAYOUT (v4.2) ============ */
   .dashboard-grid {
     display: grid;
-    grid-template-columns: repeat(10, 1fr);
+    grid-template-columns: 1fr 1fr;
     gap: 14px;
     padding: 14px 34px 26px;
   }
@@ -77,12 +77,50 @@
     flex-shrink: 0;
   }
 
-  /* Bottom-Right: Full NET impact line chart */
-  .cell-chart { grid-row: 2; grid-column: span 5; }
-  .cell-chart .canvas-box { position: relative; height: 340px; flex: 1; }
+  /* LEFT COLUMN */
+  .col-left {
+    grid-column: 1;
+    grid-row: 1 / 3;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    overflow: visible;
+  }
+  /* RIGHT COLUMN */
+  .col-right {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    overflow: visible;
+  }
 
-  /* Top-Right: KPI + NET weekly bar chart */
-  .cell-kpi { grid-row: 1; grid-column: span 4; gap: 10px; }
+  /* Right: Shared filter bar */
+  .cell-filter {
+    padding: 12px 16px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .cell-filter .filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: flex-end;
+  }
+  .cell-filter .filter-row .spacer { margin-left: auto; }
+
+  /* Right: KPI cards */
   .kpi-section {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -114,26 +152,17 @@
   .kpi-card .kval.pos { color: var(--pos); }
   .kpi-card .khint { font-size: 10.5px; color: var(--ink-3); margin-top: 2px; }
 
-  .threat-bar-section {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-  }
-  .threat-bar-section .canvas-box-small {
-    position: relative;
-    height: 420px;
-    flex: 1;
-  }
+  /* Right: Chart */
+  .cell-chart .canvas-box { position: relative; height: 440px; flex: 1; }
 
-  /* Bottom-Left: Affect by stores (tree table + filters) */
+  /* Left: Affect by stores (tree table) */
   .cell-stores {
-    grid-row: 1; grid-column: span 6;
-    max-height: 640px;
+    max-height: none;
+    min-height: 380px;
+    flex: 1;
     padding: 12px 0 0 0;
   }
   .cell-stores .cell-title { padding: 0 16px; }
-  .cell-stores .cell-fbar { padding: 10px 16px; }
   .cell-stores .t-head {
     display: flex; align-items: center; gap: 10px;
     padding: 8px 16px; border-bottom: 1px solid var(--rule);
@@ -148,10 +177,10 @@
   }
   .cell-stores .tbl-scroll { overflow-y: auto; flex: 1; overflow-x: auto; }
 
-  /* Bottom-Left: Affect by selected threat (store list) */
+  /* Left: Affect by selected threat (store list) */
   .cell-threat-detail {
-    grid-row: 2; grid-column: span 5;
-    max-height: 520px;
+    min-height: 320px;
+    flex: 1;
     padding: 10px 0 0 0;
   }
   .cell-threat-detail .cell-title { padding: 0 16px; }
@@ -170,7 +199,7 @@
     position: sticky; top: 0; background: var(--band);
     color: var(--ink-2); font-size: 10.5px; font-weight: 700;
     text-transform: uppercase; letter-spacing: .03em;
-    text-align: left; padding: 7px 8px;
+    text-align: center; padding: 7px 8px;
     border-bottom: 2px solid var(--rule);
     white-space: normal; word-wrap: break-word; overflow-wrap: break-word;
     cursor: pointer; user-select: none; z-index: 2; line-height: 1.25;
@@ -179,6 +208,10 @@
   thead th.col-net { background: #EEF4FB; color: var(--steel); }
   thead th.col-before { background: #FFF8F0; color: #8A6600; }
   thead th.col-after { background: #F0FFF4; color: var(--pos); }
+  thead th.col-impact, thead th.col-impact-hdr { background: #EEF4FB; color: var(--steel); }
+  td.col-impact { background: #F6F9FD; }
+  td.col-impact.neg { background: #FDEEF0; }
+  td.col-impact.pos { background: #F0FFF4; }
   tbody td {
     padding: 5px 8px; border-bottom: 1px solid var(--rule-2);
     vertical-align: middle; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
@@ -289,13 +322,9 @@
   }
   @media (max-width: 800px) {
     .dashboard-grid { grid-template-columns: 1fr; gap: 12px; }
-    .cell-chart,.cell-kpi,.cell-stores,.cell-threat-detail { grid-column: 1 / -1; max-height: none; }
-    .cell-stores { grid-row: 1; }
-    .cell-kpi { grid-row: 2; }
-    .cell-threat-detail { grid-row: 3; max-height: 420px; }
-    .cell-chart { grid-row: 4; }
+    .col-left,.col-right { grid-column: 1 / -1; grid-row: auto; }
+    .cell-chart,.cell-kpi,.cell-filter,.cell-stores,.cell-threat-detail { max-height: none; }
     .canvas-box { height: 260px; }
-    .threat-bar-section .canvas-box-small { height: 320px; }
     .mast,.fbar,.vtabs,.dashboard-grid,.foot { padding-left: 14px; padding-right: 14px; }
   }
 </style>
@@ -305,7 +334,7 @@
 
   <header class="mast">
     <div class="kicker">Winmart+ Miền Bắc · LFL W0–W52 · W8 baseline · 282 CH · 13 Tỉnh</div>
-    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.1 · 23/10/2026</span></h1>
+    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.2 · 23/10/2026</span></h1>
     <p class="sub">Phân tích tác động (impact) của đối thủ BHX / WCM / BHX+WCM — Before/After &amp; Control breakdown · Số liệu SPD &amp; BPD</p>
     <div class="meta" id="meta-line"></div>
   </header>
@@ -317,66 +346,68 @@
 
   <div class="vtabs" id="vtabs"></div>
 
-  <!-- 2x2 GRID LAYOUT (v4.1) -->
+  <!-- 2-COLUMN LAYOUT (v4.2) -->
   <div class="dashboard-grid" id="dashboard-grid">
-    <!-- TOP-LEFT: Affect by Stores (filters + tree table) -->
-    <div class="grid-cell cell-stores" id="cell-stores">
-      <div class="cell-title">Affect by Stores</div>
-      <div class="fbar cell-fbar" id="fbar">
-        <div class="fld"><label>Loại đối thủ</label><select id="f-threat"></select></div>
-        <div class="fld"><label>Khoảng cách</label><select id="f-dist"></select></div>
-        <div class="fld"><label>Tỉnh / TP</label><select id="f-prov"></select></div>
-        <div class="fld"><label>Từ tuần</label><select id="f-wfrom"></select></div>
-        <div class="fld"><label>Đến tuần</label><select id="f-wto"></select></div>
-        <div class="spacer"></div>
-        <button class="btn" id="btn-reset">↺ Đặt lại</button>
+    <!-- CỘT TRÁI: Affect by Stores + Affect by selected threat -->
+    <div class="col-left" id="col-left">
+      <!-- Trên: Affect by Stores (expandable tree) -->
+      <div class="grid-cell cell-stores" id="cell-stores">
+        <div class="cell-title">Affect by Stores</div>
+        <div class="t-head">
+          <h2 id="tbl-title">🏪 Cửa hàng</h2>
+          <span class="cnt" id="tbl-cnt"></span>
+          <span class="gdv-toggle" id="gdv-toggle"></span>
+          <div class="right"><input id="tbl-search" type="search" placeholder="Tìm kiếm…" autocomplete="off"></div>
+        </div>
+        <div class="tbl-scroll"><table id="tbl"></table></div>
       </div>
-      <div class="t-head">
-        <h2 id="tbl-title">🏪 Cửa hàng</h2>
-        <span class="cnt" id="tbl-cnt"></span>
-        <span class="gdv-toggle" id="gdv-toggle"></span>
-        <div class="right"><input id="tbl-search" type="search" placeholder="Tìm kiếm…" autocomplete="off"></div>
+
+      <!-- Dưới: Affect by selected threat (store table) -->
+      <div class="grid-cell cell-threat-detail" id="cell-threat-detail">
+        <div class="t-head">
+          <h2 id="td-title">Affect by selected threat</h2>
+          <span class="cnt" id="td-cnt"></span>
+        </div>
+        <div class="tbl-scroll"><table id="td-tbl"></table></div>
       </div>
-      <div class="tbl-scroll"><table id="tbl"></table></div>
     </div>
 
-    <!-- TOP-RIGHT: KPI cards + NET weekly bar chart -->
-    <div class="grid-cell cell-kpi" id="cell-kpi">
-      <div class="mt-bar">
-        <span class="lbl">Chỉ số:</span>
-        <div class="seg" id="metric-seg">
-          <button data-m="spd" class="on">SPD (tr/ngày)</button>
-          <button data-m="bpd">BPD (bill/ngày)</button>
+    <!-- CỘT PHẢI: Filter chung + KPI + Chart -->
+    <div class="col-right" id="col-right">
+      <!-- Filter chung (trên cùng) -->
+      <div class="grid-cell cell-filter" id="cell-filter">
+        <div class="cell-title">🔍 Bộ lọc chung</div>
+        <div class="filter-row">
+          <div class="fld"><label>Loại đối thủ</label><select id="f-threat"></select></div>
+          <div class="fld"><label>Khoảng cách</label><select id="f-dist"></select></div>
+          <div class="fld"><label>Tỉnh / TP</label><select id="f-prov"></select></div>
+          <div class="fld"><label>Từ tuần</label><select id="f-wfrom"></select></div>
+          <div class="fld"><label>Đến tuần</label><select id="f-wto"></select></div>
+        </div>
+        <div class="filter-row">
+          <div class="mt-bar" style="padding:0">
+            <span class="lbl">Chỉ số:</span>
+            <div class="seg" id="metric-seg">
+              <button data-m="spd" class="on">SPD (tr/ngày)</button>
+              <button data-m="bpd">BPD (bill/ngày)</button>
+            </div>
+          </div>
+          <div class="spacer"></div>
+          <button class="btn" id="btn-reset">↺ Đặt lại</button>
         </div>
       </div>
-      <div class="cell-title" style="margin-top:0">Các chỉ số highlight</div>
-      <div class="kpi-section" id="kpi-section"></div>
-      <div class="cell-title" style="margin-top:0">NET Impact theo tuần (W0–W52)</div>
-      <div class="threat-bar-section">
-        <div class="canvas-box-small"><canvas id="threat-bar-chart"></canvas></div>
-      </div>
-    </div>
 
-    <!-- BOTTOM-LEFT: Affect by selected threat (store list) -->
-    <div class="grid-cell cell-threat-detail" id="cell-threat-detail">
-      <div class="t-head">
-        <h2 id="td-title">Affect by selected threat</h2>
-        <span class="cnt" id="td-cnt"></span>
+      <!-- KPI cards -->
+      <div class="grid-cell cell-kpi" id="cell-kpi">
+        <div class="cell-title">Các chỉ số highlight</div>
+        <div class="kpi-section" id="kpi-section"></div>
       </div>
-      <div class="tbl-scroll"><table id="td-tbl"></table></div>
-    </div>
 
-    <!-- BOTTOM-RIGHT: Full NET impact line chart -->
-    <div class="grid-cell cell-chart" id="cell-chart">
-      <div class="mt-bar">
-        <span class="lbl">Chỉ số:</span>
-        <div class="seg" id="chart-seg" style="margin-left:auto">
-          <button data-m="spd" class="on">SPD (tr/ngày)</button>
-          <button data-m="bpd">BPD (bill/ngày)</button>
-        </div>
+      <!-- Chart: NET Impact — Threat by Week -->
+      <div class="grid-cell cell-chart" id="cell-chart">
+        <div class="cell-title" id="chart-title">NET Impact — Threat by Week (W0–W52)</div>
+        <div class="canvas-box"><canvas id="chart"></canvas></div>
       </div>
-      <div class="cell-title" id="chart-title">Chart NET Impact đầy đủ — W0–W52</div>
-      <div class="canvas-box"><canvas id="chart"></canvas></div>
     </div>
   </div>
 
@@ -505,13 +536,13 @@ function weeklySeries(codes){
       const s=DATA.series[c];
       if(!s) continue;
       let t = null, ct = null;
-      if(state.chartMetric==='spd'){
+      if(state.tableMetric==='spd'){
         if(s.as[w]!=null && s.bs[w]!=null) t = s.as[w]-s.bs[w];
         if(s.cx[w]!=null && s.cs[w]!=null) ct = s.cx[w]-s.cs[w];
-      } else if(state.chartMetric==='bpd'){
+      } else if(state.tableMetric==='bpd'){
         if(s.ab[w]!=null && s.bb[w]!=null) t = s.ab[w]-s.bb[w];
         if(s.cy[w]!=null && s.cb[w]!=null) ct = s.cy[w]-s.cb[w];
-      } else if(state.chartMetric==='pct'){
+      } else if(state.tableMetric==='pct'){
         if(s.as[w]!=null && s.bs[w]!=null && s.bs[w]!==0) t = (s.as[w]-s.bs[w])/s.bs[w]*100;
         if(s.cx[w]!=null && s.cs[w]!=null && s.cs[w]!==0) ct = (s.cx[w]-s.cs[w])/s.cs[w]*100;
       }
@@ -531,7 +562,20 @@ function aggregateCodes(codes){
   const ps = mean(aggs.map(a=>a.ps).filter(v=>v!=null));
   const nb = mean(aggs.map(a=>a.nb).filter(v=>v!=null));
   const pb = mean(aggs.map(a=>a.pb).filter(v=>v!=null));
-  return { n: codes.length, ns, ps, nb, pb, codes };
+  const bs = mean(aggs.map(a=>a.bs).filter(v=>v!=null));
+  const as = mean(aggs.map(a=>a.as).filter(v=>v!=null));
+  const cs = mean(aggs.map(a=>a.cs).filter(v=>v!=null));
+  const cx = mean(aggs.map(a=>a.cx).filter(v=>v!=null));
+  const bb = mean(aggs.map(a=>a.bb).filter(v=>v!=null));
+  const ab = mean(aggs.map(a=>a.ab).filter(v=>v!=null));
+  const cb = mean(aggs.map(a=>a.cb).filter(v=>v!=null));
+  const cy = mean(aggs.map(a=>a.cy).filter(v=>v!=null));
+  // Derived percentages for aggregate
+  const pctThreatS = bs && bs!==0 ? ((as - bs) / bs * 100) : null;
+  const pctCtrlS = cs && cs!==0 ? ((cx - cs) / cs * 100) : null;
+  const pctThreatB = bb && bb!==0 ? ((ab - bb) / bb * 100) : null;
+  const pctCtrlB = cb && cb!==0 ? ((cy - cb) / cb * 100) : null;
+  return { n: codes.length, ns, ps, nb, pb, bs, as, cs, cx, bb, ab, cb, cy, pctThreatS, pctCtrlS, pctThreatB, pctCtrlB, codes };
 }
 
 function byNs(a,b){ return (a.agg.ns ?? Infinity) - (b.agg.ns ?? Infinity); }
@@ -624,65 +668,11 @@ function renderKPISection(codes){
   `;
 }
 
-/* ============ NET WEEKLY BAR CHART (top-right) ============ */
-let netWeeklyBar = null;
-function renderNetWeeklyBar(codes){
-  const m = state.tableMetric;
-  // Aggregate NET impact by week (W0–W52) across filtered stores
-  const netByWeek = [];
-  for(let w=0; w<53; w++){
-    const vals = [];
-    for(const c of codes){
-      const s = DATA.series[c];
-      if(!s) continue;
-      let t = null, ct = null;
-      if(m==='spd'){
-        if(s.as[w]!=null && s.bs[w]!=null) t = s.as[w]-s.bs[w];
-        if(s.cx[w]!=null && s.cs[w]!=null) ct = s.cx[w]-s.cs[w];
-      } else {
-        if(s.ab[w]!=null && s.bb[w]!=null) t = s.ab[w]-s.bb[w];
-        if(s.cy[w]!=null && s.cb[w]!=null) ct = s.cy[w]-s.cb[w];
-      }
-      if(t!=null && ct!=null) vals.push(t - ct);
-    }
-    netByWeek.push({ w: W[w], v: mean(vals), n: vals.length });
-  }
-
-  const ctx = document.getElementById('threat-bar-chart');
-  if(netWeeklyBar) netWeeklyBar.destroy();
-  const unit = m==='spd' ? 'SPD (tr/ngày)' : 'BPD (bill/ngày)';
-
-  netWeeklyBar = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: netByWeek.map(x=>x.w),
-      datasets: [{
-        label: 'NET Impact ' + unit,
-        data: netByWeek.map(x=>x.v),
-        backgroundColor: '#2980b9',
-        borderRadius: 1,
-        borderWidth: 0
-      }]
-    },
-    options: {
-      indexAxis: 'y',
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: { callbacks: { label: c => `NET Impact: ${c.parsed.x!=null?c.parsed.x.toFixed(2):'—'}` } }
-      },
-      scales: {
-        x: { grid: { color: '#E4E9EF' }, ticks: { color: '#7C8592' } },
-        y: { grid: { display: false }, ticks: { color: '#7C8592', font: { size: 9 }, autoSkip: true, maxTicksLimit: 20 } }
-      }
-    }
-  });
-}
-
-/* ---------- line chart (top-left) ---------- */
+/* ---------- line chart (bottom-right) ---------- */
 let chart = null;
 function renderChart(codes){
+  /* v4.2: Single shared metric toggle; chart always follows state.tableMetric */
+  state.chartMetric = state.tableMetric;
   const {threat, control} = weeklySeries(codes);
   const labels = threat.map(s=>s.w);
   const threatData = threat.map(s=>s.v);
@@ -691,8 +681,8 @@ function renderChart(codes){
   const cThreat = '#d71920';
   const cControl = '#16a34a';
   const cNet = '#2980b9';
-  const yFmt = state.chartMetric==='pct' ? (v=>v.toFixed(1)+'%') : (v=>v.toFixed(2));
-  const unit = state.chartMetric==='spd' ? 'SPD (tr/ngày)' : (state.chartMetric==='bpd' ? 'BPD (bill/ngày)' : '%');
+  const yFmt = state.tableMetric==='pct' ? (v=>v.toFixed(1)+'%') : (v=>v.toFixed(2));
+  const unit = state.tableMetric==='spd' ? 'SPD (tr/ngày)' : (state.tableMetric==='bpd' ? 'BPD (bill/ngày)' : '%');
   $('#chart-title').textContent = 'Chart NET Impact đầy đủ — W0–W52: Threat vs Control (' + unit + ')';
   const ctx = $('#chart');
   if(chart) chart.destroy();
@@ -720,10 +710,25 @@ function renderChart(codes){
 
 /* ---------- Table cell helpers ---------- */
 function kpiCells(a, m){
+  // Returns: Base | Actual | %Imp | Ctrl Base | Ctrl Actual | %Imp Ctrl | NET Imp | NET %
   if(m==='spd'){
-    return `<td class="num ${signCls(a.ns)}"><b>${fmt(a.ns)}</b></td><td class="num ${signCls(a.ps)}"><b>${fmtPct(a.ps)}</b></td>`;
+    return `<td class="num col-before">${fmtNum(a.bs,1)}</td>
+      <td class="num">${fmtNum(a.as,1)}</td>
+      <td class="num ${signCls(a.pctThreatS)}">${fmtPct(a.pctThreatS)}</td>
+      <td class="num col-before">${fmtNum(a.cs,1)}</td>
+      <td class="num">${fmtNum(a.cx,1)}</td>
+      <td class="num ${signCls(a.pctCtrlS)}">${fmtPct(a.pctCtrlS)}</td>
+      <td class="num col-impact ${signCls(a.ns)}"><b>${fmt(a.ns)}</b></td>
+      <td class="num col-impact ${signCls(a.ps)}"><b>${fmtPct(a.ps)}</b></td>`;
   }
-  return `<td class="num ${signCls(a.nb)}"><b>${fmt(a.nb)}</b></td><td class="num ${signCls(a.pb)}"><b>${fmtPct(a.pb)}</b></td>`;
+  return `<td class="num col-before">${fmtNum(a.bb,1)}</td>
+    <td class="num">${fmtNum(a.ab,1)}</td>
+    <td class="num ${signCls(a.pctThreatB)}">${fmtPct(a.pctThreatB)}</td>
+    <td class="num col-before">${fmtNum(a.cb,1)}</td>
+    <td class="num">${fmtNum(a.cy,1)}</td>
+    <td class="num ${signCls(a.pctCtrlB)}">${fmtPct(a.pctCtrlB)}</td>
+    <td class="num col-impact ${signCls(a.nb)}"><b>${fmt(a.nb)}</b></td>
+    <td class="num col-impact ${signCls(a.pb)}"><b>${fmtPct(a.pb)}</b></td>`;
 }
 
 function nodeMatches(node){
@@ -737,7 +742,7 @@ function nodeMatches(node){
   return node.children.some(nodeMatches);
 }
 
-/* ---------- Main Table (bottom-left) ---------- */
+/* ---------- Main Table (top-left: Affect by Stores tree) ---------- */
 function renderTable(){
   const m = state.tableMetric;
   const unit = m==='spd' ? 'SPD (tr/ngày)' : 'BPD (bill/ngày)';
@@ -758,7 +763,22 @@ function renderTable(){
     }
   };
   walk(nodes, 0);
-  const head = `<colgroup><col style="width:32px"><col style="width:42%"><col style="width:10%"><col style="width:23%"><col style="width:23%"></colgroup><thead><tr><th></th><th>Tên</th><th class="num">SL CH</th><th class="num col-net">NET Imp ${unit}</th><th class="num col-net">NET % Impact</th></tr></thead>`;
+  const head = `<colgroup>
+    <col style="width:28px"><col style="width:18%"><col style="width:5%">
+    <col style="width:6%"><col style="width:6%"><col style="width:6%">
+    <col style="width:6%"><col style="width:6%"><col style="width:6%">
+    <col style="width:6.5%"><col style="width:6.5%">
+  </colgroup><thead><tr>
+    <th></th><th>Tên / Threat</th><th class="num">SL CH</th>
+    <th class="num col-before">Base ${unit}</th>
+    <th class="num col-after">Actual ${unit}</th>
+    <th class="num col-impact-hdr">%Imp</th>
+    <th class="num col-before">Ctrl Base ${unit}</th>
+    <th class="num col-after">Ctrl Actual ${unit}</th>
+    <th class="num col-impact-hdr">%Ctrl</th>
+    <th class="num col-impact">NET Imp</th>
+    <th class="num col-impact">NET %</th>
+  </tr></thead>`;
   $('#tbl').innerHTML = head + `<tbody>${body.join('')}</tbody>`;
   $('#tbl-cnt').textContent = `${count} dòng`;
   $('#tbl').querySelectorAll('tr.group').forEach(tr=>{
@@ -798,31 +818,59 @@ function renderStoreRow(node, depth, m){
   </tr>`;
 }
 
-/* ---------- Threat Detail Table (bottom-right) ---------- */
+/* ---------- Threat Detail Table (bottom-left: Affect by selected threat) ---------- */
 function renderThreatDetailTable(){
   const codes = filteredStores();
   const m = state.tableMetric;
-  // Sort by NET Impact SPD (worst first)
-  const scored = codes.map(c => ({ code:c, agg: storeAgg(c), s: DATA.stores[c] }));
-  scored.sort((a,b) => (a.agg.ns ?? Infinity) - (b.agg.ns ?? Infinity));
+  const unit = m==='spd' ? 'SPD (tr/ngày)' : 'BPD (bill/ngày)';
 
-  let rows = '';
-  for(const item of scored){
-    const s = item.s;
-    const a = item.agg;
-    const netImp = m==='spd' ? a.ns : a.nb;
-    const netPct = m==='spd' ? a.ps : a.pb;
-    rows += `<tr class="store-row clickable" data-code="${item.code}">
-      <td><span class="code">${item.code}</span> <span class="name">${s.n||''}</span></td>
-      <td>${s.w0||'—'}</td>
-      <td>${s.d||'—'}</td>
-      <td class="num ${signCls(netImp)}"><b>${fmt(netImp)}</b></td>
-      <td class="num ${signCls(netPct)}"><b>${fmtPct(netPct)}</b></td>
+  // Build rows — split multi-threat stores into separate rows per threat
+  const rows = [];
+  for(const code of codes){
+    const s = DATA.stores[code];
+    const a = storeAgg(code);
+    const threats = (s.t||'').split(' + '); // "BHX + WCM" → ["BHX","WCM"], single → ["BHX"]
+    for(const thr of threats){
+      const netImp = m==='spd' ? a.ns : a.nb;
+      const netPct = m==='spd' ? a.ps : a.pb;
+      const base = m==='spd' ? a.bs : a.bb;
+      const actual = m==='spd' ? a.as : a.ab;
+      const cBase = m==='spd' ? a.cs : a.cb;
+      const cActual = m==='spd' ? a.cx : a.cy;
+      const pctThreat = m==='spd' ? a.pctThreatS : a.pctThreatB;
+      const pctCtrl = m==='spd' ? a.pctCtrlS : a.pctCtrlB;
+      const impThreat = m==='spd' ? a.impThreatS : a.impThreatB;
+      const impCtrl = m==='spd' ? a.impCtrlS : a.impCtrlB;
+      rows.push({ code, s, thr, netImp, netPct, base, actual, cBase, cActual, pctThreat, pctCtrl, impThreat, impCtrl });
+    }
+  }
+  // Sort by NET Impact (worst first)
+  rows.sort((a,b) => (a.netImp ?? Infinity) - (b.netImp ?? Infinity));
+
+  let html = '';
+  for(const r of rows){
+    html += `<tr class="store-row clickable" data-code="${r.code}">
+      <td><span class="code">${r.code}</span> <span class="name">${r.s.n||''}</span></td>
+      <td><span class="tag ${thTag(r.thr)}">${r.thr}</span></td>
+      <td>${r.s.w0||'—'}</td>
+      <td>${r.s.d||'—'}</td>
+      <td class="num col-before">${fmtNum(r.base,1)}</td>
+      <td class="num">${fmtNum(r.actual,1)}</td>
+      <td class="num col-impact ${signCls(r.netImp)}"><b>${fmt(r.netImp)}</b></td>
+      <td class="num col-impact ${signCls(r.netPct)}"><b>${fmtPct(r.netPct)}</b></td>
     </tr>`;
   }
-  const unit = m==='spd' ? 'SPD (tr/ngày)' : 'BPD (bill/ngày)';
-  $('#td-tbl').innerHTML = `<colgroup><col style="width:36%"><col style="width:11%"><col style="width:12%"><col style="width:20%"><col style="width:21%"></colgroup><thead><tr><th>Tên Site</th><th>Ngày mở</th><th>Khoảng cách</th><th class="num col-net">NET Imp ${unit}</th><th class="num col-net">NET %</th></tr></thead><tbody>${rows}</tbody>`;
-  $('#td-cnt').textContent = `${codes.length} CH`;
+  $('#td-tbl').innerHTML = `<colgroup>
+    <col style="width:20%"><col style="width:9%"><col style="width:9%"><col style="width:9%">
+    <col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:9%">
+  </colgroup><thead><tr>
+    <th>Tên Site</th><th>Threat</th><th>Ngày mở</th><th>K. cách</th>
+    <th class="num col-before">Base ${unit}</th>
+    <th class="num col-after">Actual ${unit}</th>
+    <th class="num col-impact">NET Imp</th>
+    <th class="num col-impact">NET %</th>
+  </tr></thead><tbody>${html}</tbody>`;
+  $('#td-cnt').textContent = `${rows.length} dòng`;
   $('#td-title').textContent = state.threat==='all' ? 'Affect by selected threat — Tất cả' : `Affect by selected threat — ${state.threat}`;
   $('#td-tbl').querySelectorAll('tr.store-row').forEach(tr=>{
     tr.addEventListener('click', ()=>openDrawer(tr.dataset.code));
@@ -1052,7 +1100,6 @@ function renderAll(){
 
   renderChart(codes);
   renderKPISection(codes);
-  renderNetWeeklyBar(codes);
   renderTable();
   renderThreatDetailTable();
 
@@ -1147,15 +1194,10 @@ function bindEvents(){
   $('#f-wfrom').addEventListener('change',e=>{ state.wfrom=+e.target.value; if(state.wfrom>state.wto){state.wto=state.wfrom; $('#f-wto').value=state.wfrom;} renderAll(); });
   $('#f-wto').addEventListener('change',e=>{ state.wto=+e.target.value; if(state.wto<state.wfrom){state.wfrom=state.wto; $('#f-wfrom').value=state.wto;} renderAll(); });
   $('#btn-reset').addEventListener('click',()=>{ Object.assign(state,{view:'province',gdvMode:'rsm',threat:'all',dist:'all',prov:'all',wfrom:0,wto:52}); expanded.clear(); $('#f-threat').value='all'; $('#f-dist').value='all'; $('#f-prov').value='all'; $('#f-wfrom').value='0'; $('#f-wto').value='52'; renderAll(); });
-  // Chart metric toggle
-  $('#chart-seg').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
-    state.chartMetric = b.dataset.m;
-    $('#chart-seg').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));
-    renderChart(filteredStores());
-  }));
-  // Table metric toggle
+  // Unified metric toggle (shared across all panels)
   $('#metric-seg').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
     state.tableMetric = b.dataset.m;
+    state.chartMetric = b.dataset.m;
     $('#metric-seg').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));
     renderAll();
   }));
