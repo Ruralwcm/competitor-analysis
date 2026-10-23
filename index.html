@@ -139,6 +139,9 @@
   table.tw-tbl thead th{position:sticky;top:0;z-index:2;background:var(--band);font-size:9.5px;padding:5px 3px}
   table.tw-tbl th.tw-r,table.tw-tbl td.tw-r{position:sticky;left:0;background:var(--band);z-index:1;font-weight:700;text-align:left;white-space:nowrap;padding:5px 8px;min-width:140px}
   table.tw-tbl th.tw-w{min-width:34px}
+  table.tw-tbl th.tw-ch,table.tw-tbl td.tw-ch{min-width:42px}
+  table.tw-tbl tr.tw-row{cursor:pointer}
+  table.tw-tbl tr.tw-sub td.tw-r{background:#F6F9FC}
   table.tw-tbl tbody td.num{padding:5px 3px;text-align:center}
 
   .gdv-toggle{display:none;gap:4px}
@@ -209,7 +212,7 @@
 
   <header class="mast">
     <div class="kicker">Winmart+ Miền Bắc · LFL W0–W52 · W8 baseline · 282 CH · 13 Tỉnh</div>
-    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.20 · 23/10/2026</span></h1>
+    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.21 · 23/10/2026</span></h1>
     <p class="sub">Phân tích tác động (impact) của đối thủ BHX / WCM / BHX+WCM — Before/After &amp; Control breakdown · Số liệu SPD &amp; BPD</p>
     <div class="meta" id="meta-line"></div>
   </header>
@@ -322,6 +325,7 @@ const state = {
   storelistReady: false
 };
 const expanded = new Set();
+const twExpanded = new Set();
 let selectedProvince = null; // province selection for Section 2
 let selectedDistrict = null; // district selection for Section 2
 let drawerCode = null;
@@ -578,6 +582,7 @@ function renderThreatWeekTable(){
   const m = state.tableMetric;
   const field = m==='spd' ? 'ps' : 'pb';
   const threats = ['BHX','WCM','BHX + WCM'];
+  const dists = DATA.meta.distances || [];
   const codes = filteredStores();
   const byThreat = {};
   for(const c of codes){ const t = DATA.stores[c].t || ''; (byThreat[t] = byThreat[t] || []).push(c); }
@@ -587,13 +592,7 @@ function renderThreatWeekTable(){
   for(let w=0; w<W.length; w+=4) weeks.push(w);
   if(weeks[weeks.length-1] !== W.length-1) weeks.push(W.length-1);
 
-  let head = '<thead><tr><th class="tw-r">Threat</th>';
-  for(const w of weeks) head += `<th class="num tw-w">${W[w]}</th>`;
-  head += '<th class="num tw-w tw-avg" title="Trung bình W0–W52">TB</th></tr></thead>';
-
-  let body = '<tbody>';
-  for(const t of threats){
-    const list = byThreat[t] || [];
+  const weekCells = (list) => {
     let cells = '';
     for(const w of weeks){
       const vals = [];
@@ -601,16 +600,50 @@ function renderThreatWeekTable(){
       const v = mean(vals);
       cells += `<td class="num ${signCls(v)}">${v==null?'':fmtPct(v)}</td>`;
     }
-    // Trung bình toàn bộ W0–W52
     const allVals = [];
     for(const c of list){ const s = DATA.series[c]; if(!s) continue; for(let w=0; w<W.length; w++){ if(s[field] && s[field][w]!=null) allVals.push(s[field][w]); } }
     const avg = mean(allVals);
     cells += `<td class="num tw-avg ${signCls(avg)}"><b>${avg==null?'':fmtPct(avg)}</b></td>`;
-    body += `<tr><td class="tw-r"><span class="tag ${thTag(t)}">${t}</span></td>${cells}</tr>`;
+    return cells;
+  };
+
+  let head = '<thead><tr><th class="tw-r">Threat</th><th class="num tw-ch">Số CH</th>';
+  for(const w of weeks) head += `<th class="num tw-w">${W[w]}</th>`;
+  head += '<th class="num tw-w tw-avg" title="Trung bình W0–W52">TB</th></tr></thead>';
+
+  let body = '<tbody>';
+  for(const t of threats){
+    const list = byThreat[t] || [];
+    const open = twExpanded.has(t);
+    const caret = `<span class="tree-caret ${open?'open':''}">▶</span>`;
+    body += `<tr class="tw-row clickable" data-t="${t}">
+      <td class="tw-r">${caret}<span class="tag ${thTag(t)}">${t}</span></td>
+      <td class="num tw-ch">${list.length}</td>
+      ${weekCells(list)}
+    </tr>`;
+    if(open){
+      for(const d of dists){
+        const dlist = list.filter(c => (DATA.stores[c].d||'') === d);
+        if(!dlist.length) continue;
+        body += `<tr class="tw-sub">
+          <td class="tw-r" style="padding-left:24px;font-weight:400">↳ ${d}</td>
+          <td class="num tw-ch">${dlist.length}</td>
+          ${weekCells(dlist)}
+        </tr>`;
+      }
+    }
   }
   body += '</tbody>';
 
   $('#tw-tbl').innerHTML = head + body;
+
+  $('#tw-tbl').querySelectorAll('tr.tw-row').forEach(tr=>{
+    tr.addEventListener('click', ()=>{
+      const t = tr.dataset.t;
+      if(twExpanded.has(t)) twExpanded.delete(t); else twExpanded.add(t);
+      renderThreatWeekTable();
+    });
+  });
 }
 
 function renderChart(codes){
