@@ -98,7 +98,7 @@
 
   /* Left panels get scroll */
   .panel.has-scroll{flex:0 0 auto;overflow:hidden}
-  .panel.has-scroll .tbl-scroll{height:480px;flex:0 0 auto}
+  .panel.has-scroll .tbl-scroll{height:330px;flex:0 0 auto}
 
   /* Table styles */
   table{width:100%;border-collapse:collapse;font-size:12.5px;table-layout:fixed}
@@ -209,7 +209,7 @@
 
   <header class="mast">
     <div class="kicker">Winmart+ Miền Bắc · LFL W0–W52 · W8 baseline · 282 CH · 13 Tỉnh</div>
-    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.19 · 23/10/2026</span></h1>
+    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.20 · 23/10/2026</span></h1>
     <p class="sub">Phân tích tác động (impact) của đối thủ BHX / WCM / BHX+WCM — Before/After &amp; Control breakdown · Số liệu SPD &amp; BPD</p>
     <div class="meta" id="meta-line"></div>
   </header>
@@ -245,11 +245,9 @@
     <div class="col-l" id="col-left">
       <!-- Trên: Section 1 — Bảng theo Tỉnh (không drill tới CH) -->
       <div class="panel has-scroll" id="cell-stores">
-        <div class="panel-title" id="sec1-title">🏛️ Theo Tỉnh → Huyện</div>
         <div class="t-head">
-          <h2 id="tbl-title">Tỉnh / Huyện</h2>
+          <h2 id="tbl-title">🏛️ Theo Tỉnh → Huyện</h2>
           <span class="cnt" id="tbl-cnt"></span>
-          <span class="gdv-toggle" id="gdv-toggle"></span>
           <div class="right"><input id="tbl-search" type="search" placeholder="Tìm kiếm…" autocomplete="off"></div>
         </div>
         <div class="tbl-scroll"><table id="tbl"></table></div>
@@ -319,12 +317,36 @@ const state = {
   tableMetric: 'spd',
   drawerMetric: 'spd',
   search: '',
+  sortKey: null,
+  sortDir: -1,
   storelistReady: false
 };
 const expanded = new Set();
 let selectedProvince = null; // province selection for Section 2
 let selectedDistrict = null; // district selection for Section 2
 let drawerCode = null;
+
+const KPI_SORT = {
+  spd: ['bs','as','pctThreatS','cs','cx','pctCtrlS','ns','ps'],
+  bpd: ['bb','ab','pctThreatB','cb','cy','pctCtrlB','nb','pb']
+};
+const KPI_HEADERS = [
+  ['col-before','Base'], ['col-after','Actual'], ['col-impact-hdr','%Imp'],
+  ['col-before','Ctrl<br>Base'], ['col-after','Ctrl<br>Actual'], ['col-impact','Ctrl%'],
+  ['col-impact','NET<br>Imp'], ['col-impact','NET%']
+];
+function sortNodeList(list){
+  if(!state.sortKey) return list;
+  const dir = state.sortDir;
+  list.sort((a,b)=>{
+    const va = a.agg[state.sortKey], vb = b.agg[state.sortKey];
+    if(va==null && vb==null) return 0;
+    if(va==null) return 1;
+    if(vb==null) return -1;
+    return (va-vb)*dir;
+  });
+  return list;
+}
 
 /* ---------- storelist ---------- */
 function fetchStorelist(){
@@ -490,16 +512,20 @@ function buildProvinceTree(codes){
 }
 
 function buildOrgTree(codes){
-  const isRsm = state.gdvMode==='rsm';
-  const map = {};
+  const byGdv = {};
   for(const c of codes){
     const s = DATA.stores[c];
-    const k = isRsm ? (s.g || '(chưa có GĐV)') : (s.q || '(chưa có QLKV)');
-    (map[k] = map[k] || []).push(c);
+    const g = s.g || '(chưa có GĐV)';
+    const q = s.q || '(chưa có QLKV)';
+    (byGdv[g] = byGdv[g] || {});
+    (byGdv[g][q] = byGdv[g][q] || []).push(c);
   }
-  // Section 1: groups only, no store children
-  const nodes = Object.keys(map).map(k => {
-    return { kind:'group', key:(isRsm?'g:':'q:')+k, label:k, agg: aggregateCodes(map[k]), children: null };
+  const nodes = Object.keys(byGdv).map(g => {
+    const qmap = byGdv[g];
+    const qNodes = Object.keys(qmap).map(q => ({ kind:'group', key:'q:'+q, label:q, agg: aggregateCodes(qmap[q]), children: null }));
+    qNodes.sort(byNs);
+    const allCodes = Object.values(qmap).flat();
+    return { kind:'group', key:'g:'+g, label:g, agg: aggregateCodes(allCodes), children: qNodes };
   });
   nodes.sort(byNs);
   return nodes;
@@ -665,8 +691,12 @@ function nodeMatches(node){
 function renderTable(){
   const m = state.tableMetric;
   const unit = m==='spd' ? 'SPD (tr/ngày)' : 'BPD (bill/ngày)';
-  const nodes = buildTree();
+  const sf = KPI_SORT[m==='spd'?'spd':'bpd'];
+  const kpiHead = KPI_HEADERS.map(([cls,label],i)=>`<th class="num ${cls}" data-sort="${sf[i]}">${label}</th>`).join('');
+  const nodes = sortNodeList(buildTree());
+  nodes.forEach(n=>{ if(n.children) sortNodeList(n.children); });
   const isProv = state.view === 'province';
+  const isGdv = state.view === 'gdv';
   const body = [];
   let count = 0;
 
@@ -712,14 +742,7 @@ function renderTable(){
   </colgroup><thead><tr>
     <th>Tỉnh</th><th class="num">SL CH</th>
     <th class="num">WCM</th><th class="num">BHX</th><th class="num">BHX+<br>WCM</th>
-    <th class="num col-before">Base</th>
-    <th class="num col-after">Actual</th>
-    <th class="num col-impact-hdr">%Imp</th>
-    <th class="num col-before">Ctrl<br>Base</th>
-    <th class="num col-after">Ctrl<br>Actual</th>
-    <th class="num col-impact">Ctrl%</th>
-    <th class="num col-impact">NET<br>Imp</th>
-    <th class="num col-impact">NET%</th>
+    ${kpiHead}
   </tr></thead>`;
     $('#tbl').innerHTML = head + `<tbody>${body.join('')}</tbody>`;
 
@@ -752,8 +775,70 @@ function renderTable(){
       });
     });
 
+  } else if(isGdv){
+    // GĐV → QLKV tree (expandable)
+    const walk = (list, depth) => {
+      for(const node of list){
+        if(!nodeMatches(node)) continue;
+        count++;
+        const open = expanded.has(node.key);
+        const isSel = selectedProvince===node.key;
+        const indent = `<span style="display:inline-block;width:${depth*20}px"></span>`;
+        const caret = node.children && node.children.length ? `<span class="tree-caret ${open?'open':''}">▶</span>` : `<span class="tree-caret leaf">▶</span>`;
+        body.push(`<tr class="group-row clickable" data-key="${node.key}" style="${isSel?'background:#E6EDF6;font-weight:700':''}">
+    <td>${indent}${caret}<span class="grp-label">${node.label}</span></td>
+    <td class="num">${node.agg.n}</td>
+    ${kpiCells(node.agg, m)}
+  </tr>`);
+        if(open && node.children){
+          for(const d of node.children){
+            if(!nodeMatches(d)) continue;
+            count++;
+            const dIndent = `<span style="display:inline-block;width:${(depth+1)*20+18}px"></span>`;
+            body.push(`<tr class="group-row clickable" data-key="${d.key}">
+    <td>${dIndent}<span class="grp-label">${d.label}</span></td>
+    <td class="num">${d.agg.n}</td>
+    ${kpiCells(d.agg, m)}
+  </tr>`);
+          }
+        }
+      }
+    };
+    walk(nodes, 0);
+
+    const head = `<colgroup>
+    <col style="width:39%"><col style="width:5%">
+    <col style="width:7%"><col style="width:7%"><col style="width:6.5%">
+    <col style="width:7%"><col style="width:7%"><col style="width:6.5%"><col style="width:7.5%"><col style="width:7.5%">
+  </colgroup><thead><tr>
+    <th>GĐV / QLKV</th><th class="num">SL CH</th>
+    ${kpiHead}
+  </tr></thead>`;
+    $('#tbl').innerHTML = head + `<tbody>${body.join('')}</tbody>`;
+
+    $('#tbl').querySelectorAll('tr.group-row').forEach(tr=>{
+      tr.addEventListener('click', (e)=>{
+        if(e.target.closest('.tree-caret')) return;
+        const k = tr.dataset.key;
+        if(k.startsWith('g:')){
+          if(expanded.has(k)) expanded.delete(k); else expanded.add(k);
+          selectedProvince = k; selectedDistrict = null;
+        }
+        renderAll();
+      });
+    });
+    $('#tbl').querySelectorAll('tr.group-row .tree-caret').forEach(ct=>{
+      ct.addEventListener('click', (ev)=>{
+        ev.stopPropagation();
+        const k = ct.closest('tr').dataset.key;
+        if(expanded.has(k)) expanded.delete(k); else expanded.add(k);
+        renderTable();
+        renderThreatDetailTable();
+      });
+    });
+
   } else {
-    // Threat / GĐV / QLKV — flat groups, no drill-down, no threat-count columns
+    // Threat — flat groups
     for(const node of nodes){
       if(!nodeMatches(node)) continue;
       count++;
@@ -770,15 +855,8 @@ function renderTable(){
     <col style="width:7%"><col style="width:7%"><col style="width:6.5%">
     <col style="width:7%"><col style="width:7%"><col style="width:6.5%"><col style="width:7.5%"><col style="width:7.5%">
   </colgroup><thead><tr>
-    <th>Tên</th><th class="num">SL CH</th>
-    <th class="num col-before">Base</th>
-    <th class="num col-after">Actual</th>
-    <th class="num col-impact-hdr">%Imp</th>
-    <th class="num col-before">Ctrl Base</th>
-    <th class="num col-after">Ctrl Actual</th>
-    <th class="num col-impact-hdr">Ctrl%</th>
-    <th class="num col-impact">NET Imp</th>
-    <th class="num col-impact">NET %</th>
+    <th>Threat</th><th class="num">SL CH</th>
+    ${kpiHead}
   </tr></thead>`;
     $('#tbl').innerHTML = head + `<tbody>${body.join('')}</tbody>`;
 
@@ -791,6 +869,16 @@ function renderTable(){
       });
     });
   }
+
+  // Sort by Base → NET (click column header)
+  $('#tbl').querySelectorAll('thead th[data-sort]').forEach(th=>{
+    th.addEventListener('click', ()=>{
+      const k = th.dataset.sort;
+      if(state.sortKey===k) state.sortDir = -state.sortDir;
+      else { state.sortKey = k; state.sortDir = -1; }
+      renderTable();
+    });
+  });
 
   $('#tbl-cnt').textContent = `${count} dòng`;
 }
@@ -1079,16 +1167,7 @@ const VIEWS = [
 ];
 function renderTabs(){
   $('#vtabs').innerHTML = VIEWS.map(([k,l])=>`<button data-v="${k}" class="${state.view===k?'on':''}">${l}</button>`).join('');
-  $('#vtabs').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{ state.view=b.dataset.v; expanded.clear(); selectedProvince=null; selectedDistrict=null; renderAll(); }));
-  const gt = $('#gdv-toggle');
-  if(state.view==='gdv'){
-    gt.style.display='flex';
-    gt.innerHTML = `<button data-g="rsm" class="${state.gdvMode==='rsm'?'on':''}">RSM (GĐV)</button><button data-g="asm" class="${state.gdvMode==='asm'?'on':''}">ASM (QLKV)</button>`;
-    gt.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{ state.gdvMode=b.dataset.g; expanded.clear(); renderAll(); }));
-  } else {
-    gt.style.display='none';
-    gt.innerHTML='';
-  }
+  $('#vtabs').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{ state.view=b.dataset.v; state.sortKey=null; expanded.clear(); selectedProvince=null; selectedDistrict=null; renderAll(); }));
 }
 
 /* ---------- Render all ---------- */
@@ -1103,11 +1182,8 @@ function renderAll(){
   if(rulesEl) rulesEl.style.display = 'none';
 
   const codes = filteredStores();
-  const viewName = VIEWS.find(v=>v[0]===state.view)[1];
-  $('#tbl-title').textContent = '🏛️ ' + viewName;
-  // Section 1 title
-  const sec1Title = state.view==='province' ? '🏛️ Theo Tỉnh → Huyện' : (state.view==='threat' ? '⚡ Theo Threat' : '👥 Theo ' + (state.gdvMode==='rsm'?'GĐV':'QLKV'));
-  $('#sec1-title').textContent = sec1Title;
+  const sec1Title = state.view==='province' ? '🏛️ Theo Tỉnh → Huyện' : (state.view==='threat' ? '⚡ Theo Threat' : '👥 Theo GĐV → QLKV');
+  $('#tbl-title').textContent = sec1Title;
 
   renderKPISection(codes);
   renderTable();
