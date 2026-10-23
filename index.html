@@ -212,7 +212,7 @@
 <div class="page">
 
   <header class="mast">
-    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.25 · 23/10/2026</span></h1>
+    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.26 · 23/10/2026</span></h1>
     <p class="sub">BHX / WCM / BHX+WCM · LFL W0–W52 · 282 CH</p>
   </header>
 
@@ -538,15 +538,26 @@ function buildOrgTree(codes){
     const s = DATA.stores[c];
     const g = s.g || '(chưa có GĐV)';
     const q = s.q || '(chưa có QLKV)';
-    (byGdv[g] = byGdv[g] || {});
-    (byGdv[g][q] = byGdv[g][q] || []).push(c);
+    const t = s.t || '';
+    byGdv[g] = byGdv[g] || {};
+    if(!byGdv[g][q]) byGdv[g][q] = { codes:[], wcm:0, bhx:0, both:0 };
+    byGdv[g][q].codes.push(c);
+    if(t.includes('WCM') && t.includes('BHX')) byGdv[g][q].both++;
+    else if(t.includes('WCM')) byGdv[g][q].wcm++;
+    else if(t.includes('BHX')) byGdv[g][q].bhx++;
   }
   const nodes = Object.keys(byGdv).map(g => {
     const qmap = byGdv[g];
-    const qNodes = Object.keys(qmap).map(q => ({ kind:'group', key:'q:'+q, label:q, agg: aggregateCodes(qmap[q]), children: null }));
+    const qNodes = Object.keys(qmap).map(q => {
+      const b = qmap[q];
+      return { kind:'group', key:'q:'+q, label:q, agg: aggregateCodes(b.codes), wcm: b.wcm, bhx: b.bhx, both: b.both, children: null };
+    });
     qNodes.sort(byNs);
-    const allCodes = Object.values(qmap).flat();
-    return { kind:'group', key:'g:'+g, label:g, agg: aggregateCodes(allCodes), children: qNodes };
+    const allCodes = Object.values(qmap).flatMap(b=>b.codes);
+    const wcm = Object.values(qmap).reduce((s,b)=>s+b.wcm,0);
+    const bhx = Object.values(qmap).reduce((s,b)=>s+b.bhx,0);
+    const both = Object.values(qmap).reduce((s,b)=>s+b.both,0);
+    return { kind:'group', key:'g:'+g, label:g, agg: aggregateCodes(allCodes), wcm, bhx, both, children: qNodes };
   });
   nodes.sort(byNs);
   return nodes;
@@ -876,6 +887,7 @@ function renderTable(){
         body.push(`<tr class="group-row clickable" data-key="${node.key}" style="${isSel?'background:#E6EDF6;font-weight:700':''}">
     <td>${indent}${caret}<span class="grp-label">${node.label}</span></td>
     <td class="num">${node.agg.n}</td>
+    <td class="num">${node.wcm||0}</td><td class="num">${node.bhx||0}</td><td class="num">${node.both||0}</td>
     ${kpiCells(node.agg, m)}
   </tr>`);
         if(open && node.children){
@@ -886,6 +898,7 @@ function renderTable(){
             body.push(`<tr class="group-row clickable" data-key="${d.key}">
     <td>${dIndent}<span class="grp-label">${d.label}</span></td>
     <td class="num">${d.agg.n}</td>
+    <td class="num">${d.wcm||0}</td><td class="num">${d.bhx||0}</td><td class="num">${d.both||0}</td>
     ${kpiCells(d.agg, m)}
   </tr>`);
           }
@@ -895,11 +908,13 @@ function renderTable(){
     walk(nodes, 0);
 
     const head = `<colgroup>
-    <col style="width:39%"><col style="width:5%">
+    <col style="width:21%"><col style="width:6%">
+    <col style="width:5%"><col style="width:5%"><col style="width:7%">
     <col style="width:7%"><col style="width:7%"><col style="width:6.5%">
     <col style="width:7%"><col style="width:7%"><col style="width:6.5%"><col style="width:7.5%"><col style="width:7.5%">
   </colgroup><thead><tr>
     <th>GĐV / QLKV</th><th class="num">SL CH</th>
+    <th class="num">WCM</th><th class="num">BHX</th><th class="num">BHX+<br>WCM</th>
     ${kpiHead}
   </tr></thead>`;
     $('#tbl').innerHTML = head + `<tbody>${body.join('')}</tbody>`;
