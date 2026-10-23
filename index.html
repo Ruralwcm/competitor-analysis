@@ -26,310 +26,155 @@
   .mast .sub{font-size:13.5px;color:var(--ink-2);margin:0}
   .mast .meta{display:flex;gap:16px;margin-top:8px;flex-wrap:wrap;font-size:12px;color:var(--ink-3)}
 
-  /* Filter bar */
-  .fbar{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;padding:12px 34px;border-bottom:1px solid var(--rule);background:#fff}
-  .fld{display:flex;flex-direction:column;gap:4px}
-  .fld label{font-size:11px;font-weight:700;color:var(--ink-3);letter-spacing:.04em;text-transform:uppercase}
-  .fld select,.fld input{font:inherit;font-size:13px;padding:6px 10px;border:1px solid var(--rule);border-radius:6px;color:var(--ink);background:#fff;min-width:120px}
-  .fld select:focus,.fld input:focus{outline:2px solid var(--sky);border-color:var(--sky)}
-  .fbar .spacer{margin-left:auto}
-  .btn{font:inherit;font-size:13px;font-weight:600;padding:7px 14px;border-radius:6px;border:1px solid var(--rule);background:#fff;color:var(--ink-2);cursor:pointer}
-  .btn:hover{background:var(--band)}
-  .btn.pri{background:var(--navy);color:#fff;border-color:var(--navy)}
-  .btn.pri:hover{background:var(--steel)}
+  /* ============ v4.3 LAYOUT ============ */
 
-  /* View tabs */
-  .vtabs{display:flex;flex-wrap:wrap;gap:2px;padding:0 34px;border-bottom:1px solid var(--rule);background:#fff}
+  /* HÀNG 0: View tabs (sticky) */
+  .vtabs{display:flex;flex-wrap:wrap;gap:2px;padding:0 34px;border-bottom:1px solid var(--rule);background:#fff;position:sticky;top:0;z-index:10}
   .vtabs button{font:inherit;font-size:13px;font-weight:600;padding:12px 18px;border:0;border-bottom:3px solid transparent;background:none;color:var(--ink-2);cursor:pointer}
   .vtabs button:hover{background:var(--band)}
   .vtabs button.on{color:var(--navy);border-bottom-color:var(--navy)}
 
-  /* Metric toggle bar */
-  .mt-bar{display:flex;align-items:center;gap:8px;padding:0 0 10px}
+  /* HÀNG 1 (full width): Bộ lọc chung */
+  .filter-bar-full{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;padding:12px 34px;border-bottom:1px solid var(--rule);background:#fff;position:sticky;top:48px;z-index:9}
+  .fld{display:flex;flex-direction:column;gap:4px}
+  .fld label{font-size:11px;font-weight:700;color:var(--ink-3);letter-spacing:.04em;text-transform:uppercase}
+  .fld select,.fld input{font:inherit;font-size:13px;padding:6px 10px;border:1px solid var(--rule);border-radius:6px;color:var(--ink);background:#fff;min-width:110px}
+  .fld select:focus,.fld input:focus{outline:2px solid var(--sky);border-color:var(--sky)}
+  .btn{font:inherit;font-size:13px;font-weight:600;padding:7px 14px;border-radius:6px;border:1px solid var(--rule);background:#fff;color:var(--ink-2);cursor:pointer;white-space:nowrap}
+  .btn:hover{background:var(--band)}
+  .btn.pri{background:var(--navy);color:#fff;border-color:var(--navy)}
+  .btn.pri:hover{background:var(--steel)}
+
+  /* Metric toggle */
+  .mt-bar{display:flex;align-items:center;gap:8px}
   .mt-bar .seg{display:flex;gap:4px}
   .mt-bar .seg button{font:inherit;font-size:12.5px;font-weight:600;padding:5px 12px;border-radius:16px;border:1px solid var(--rule);background:#fff;color:var(--ink-2);cursor:pointer}
   .mt-bar .seg button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
-  .mt-bar .lbl{font-size:11px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.04em;margin-right:8px}
+  .mt-bar .lbl{font-size:11px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.04em;margin-right:4px}
 
-  /* ============ 2-COLUMN LAYOUT (v4.2) ============ */
-  .dashboard-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-    padding: 14px 34px 26px;
-  }
-  .grid-cell {
-    background: #fff;
-    border: 1px solid var(--rule);
-    border-radius: 10px;
-    padding: 14px 16px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-  }
-  .grid-cell .cell-title {
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--navy);
-    margin: 0 0 10px;
-    text-transform: uppercase;
-    letter-spacing: .03em;
-    flex-shrink: 0;
-  }
+  /* HÀNG 2 (full width): KPI cards — 1 dòng ngang 4 cards */
+  .kpi-row-full{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:14px 34px;border-bottom:1px solid var(--rule);background:var(--band)}
+  .kpi-card{background:var(--paper);border-radius:8px;padding:12px 14px;text-align:center;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+  .kpi-card .klab{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--ink-3);margin-bottom:2px}
+  .kpi-card .kval{font-size:24px;font-weight:700;color:var(--navy);line-height:1.15;letter-spacing:-.02em}
+  .kpi-card .kval.neg{color:var(--neg)}
+  .kpi-card .kval.pos{color:var(--pos)}
+  .kpi-card .khint{font-size:10.5px;color:var(--ink-3);margin-top:2px}
 
-  /* LEFT COLUMN */
-  .col-left {
-    grid-column: 1;
-    grid-row: 1 / 3;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    padding: 0;
-    background: transparent;
-    border: none;
-    border-radius: 0;
-    overflow: hidden;
-    max-height: calc(100vh - 160px);
-  }
-  /* RIGHT COLUMN */
-  .col-right {
-    grid-column: 2;
-    grid-row: 1 / 3;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    padding: 0;
-    background: transparent;
-    border: none;
-    border-radius: 0;
-    overflow: visible;
-  }
+  /* HÀNG 3: 2 columns 50/50 */
+  .content-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:14px 34px 26px}
+  .col-l,.col-r{display:flex;flex-direction:column;gap:14px;min-width:0}
 
-  /* Right: Shared filter bar */
-  .cell-filter {
-    padding: 12px 16px;
-    flex-shrink: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  .cell-filter .filter-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    align-items: flex-end;
-  }
-  .cell-filter .filter-row .spacer { margin-left: auto; }
+  /* Panels */
+  .panel{background:#fff;border:1px solid var(--rule);border-radius:10px;overflow:hidden;display:flex;flex-direction:column}
+  .panel-title{font-size:13px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.03em;padding:12px 16px 8px;flex-shrink:0}
+  .panel .t-head{display:flex;align-items:center;gap:10px;padding:6px 16px 8px;border-bottom:1px solid var(--rule);flex-wrap:wrap;flex-shrink:0}
+  .panel .t-head h2{font-size:13px;font-weight:700;color:var(--navy);margin:0}
+  .panel .t-head .cnt{font-size:12px;color:var(--ink-3)}
+  .panel .t-head .right{margin-left:auto;display:flex;gap:6px;align-items:center}
+  .panel .t-head .right input{font:inherit;font-size:12.5px;padding:5px 8px;border:1px solid var(--rule);border-radius:6px;min-width:160px}
+  .panel .tbl-scroll{overflow:auto;flex:1}
+  .panel .canvas-box{position:relative;flex:1;min-height:420px}
 
-  /* Right: KPI cards */
-  .kpi-section {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    flex-shrink: 0;
-  }
-  .kpi-card {
-    background: var(--band);
-    border-radius: 8px;
-    padding: 10px 12px;
-    text-align: center;
-  }
-  .kpi-card .klab {
-    font-size: 10.5px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: .03em;
-    color: var(--ink-3);
-    margin-bottom: 2px;
-  }
-  .kpi-card .kval {
-    font-size: 24px;
-    font-weight: 700;
-    color: var(--navy);
-    line-height: 1.15;
-    letter-spacing: -.02em;
-  }
-  .kpi-card .kval.neg { color: var(--neg); }
-  .kpi-card .kval.pos { color: var(--pos); }
-  .kpi-card .khint { font-size: 10.5px; color: var(--ink-3); margin-top: 2px; }
-
-  /* Right: Chart */
-  .cell-chart .canvas-box { position: relative; height: 440px; flex: 1; }
-
-  /* Left: Affect by stores (tree table) */
-  .cell-stores {
-    min-height: 0;
-    flex: 1;
-    overflow-y: auto;
-    padding: 12px 0 0 0;
-  }
-  .cell-stores .cell-title { padding: 0 16px; }
-  .cell-stores .t-head {
-    display: flex; align-items: center; gap: 10px;
-    padding: 8px 16px; border-bottom: 1px solid var(--rule);
-    flex-wrap: wrap; flex-shrink: 0;
-    position: sticky; top: 0; background: #fff; z-index: 2;
-  }
-  .cell-stores .t-head h2 { font-size: 13px; font-weight: 700; color: var(--navy); margin: 0; }
-  .cell-stores .t-head .cnt { font-size: 12px; color: var(--ink-3); }
-  .cell-stores .t-head .right { margin-left: auto; display: flex; gap: 6px; align-items: center; }
-  .cell-stores .t-head .right input {
-    font: inherit; font-size: 12.5px; padding: 5px 8px;
-    border: 1px solid var(--rule); border-radius: 6px; min-width: 160px;
-  }
-  .cell-stores .tbl-scroll { overflow-y: auto; flex: 1; overflow-x: auto; }
-
-  /* Left: Affect by selected threat (store list) */
-  .cell-threat-detail {
-    min-height: 0;
-    flex: 1;
-    overflow-y: auto;
-    padding: 10px 0 0 0;
-  }
-  .cell-threat-detail .cell-title { padding: 0 16px; }
-  .cell-threat-detail .t-head {
-    display: flex; align-items: center; gap: 10px;
-    padding: 8px 16px; border-bottom: 1px solid var(--rule);
-    flex-wrap: wrap; flex-shrink: 0;
-    position: sticky; top: 0; background: #fff; z-index: 2;
-  }
-  .cell-threat-detail .t-head h2 { font-size: 13px; font-weight: 700; color: var(--navy); margin: 0; }
-  .cell-threat-detail .t-head .cnt { font-size: 12px; color: var(--ink-3); }
-  .cell-threat-detail .tbl-scroll { overflow-y: auto; flex: 1; overflow-x: auto; }
+  /* Left panels get scroll */
+  .panel.has-scroll{flex:1;min-height:220px;overflow:hidden}
 
   /* Table styles */
-  table { width: 100%; border-collapse: collapse; font-size: 12.5px; table-layout: fixed; }
-  thead th {
-    position: sticky; top: 0; background: var(--band);
-    color: var(--ink-2); font-size: 10.5px; font-weight: 700;
-    text-transform: uppercase; letter-spacing: .03em;
-    text-align: center; padding: 7px 8px;
-    border-bottom: 2px solid var(--rule);
-    white-space: normal; word-wrap: break-word; overflow-wrap: break-word;
-    cursor: pointer; user-select: none; z-index: 2; line-height: 1.25;
-  }
-  thead th.num,tbody td.num { text-align: right; font-variant-numeric: tabular-nums; }
-  thead th.col-net { background: #EEF4FB; color: var(--steel); }
-  thead th.col-before { background: #FFF8F0; color: #8A6600; }
-  thead th.col-after { background: #F0FFF4; color: var(--pos); }
-  thead th.col-impact, thead th.col-impact-hdr { background: #EEF4FB; color: var(--steel); }
-  td.col-impact { background: #F6F9FD; }
-  td.col-impact.neg { background: #FDEEF0; }
-  td.col-impact.pos { background: #F0FFF4; }
-  tbody td {
-    padding: 5px 8px; border-bottom: 1px solid var(--rule-2);
-    vertical-align: middle; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  }
-  tbody tr:hover { background: var(--band); }
-  tbody tr.clickable { cursor: pointer; }
-  td .code { font-weight: 700; color: var(--navy); }
-  td .name { color: var(--ink-2); }
-  td .sub { font-size: 12px; color: var(--ink-3); }
+  table{width:100%;border-collapse:collapse;font-size:12.5px;table-layout:fixed}
+  thead th{position:sticky;top:0;background:var(--band);color:var(--ink-2);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;text-align:center;padding:7px 8px;border-bottom:2px solid var(--rule);white-space:normal;word-wrap:break-word;overflow-wrap:break-word;cursor:pointer;user-select:none;z-index:2;line-height:1.25}
+  thead th.num,tbody td.num{text-align:right;font-variant-numeric:tabular-nums}
+  thead th.col-net{background:#EEF4FB;color:var(--steel)}
+  thead th.col-before{background:#FFF8F0;color:#8A6600}
+  thead th.col-after{background:#F0FFF4;color:var(--pos)}
+  thead th.col-impact,.col-impact-hdr{background:#EEF4FB;color:var(--steel)}
+  td.col-impact{background:#F6F9FD}
+  td.col-impact.neg{background:#FDEEF0}
+  td.col-impact.pos{background:#F0FFF4}
+  tbody td{padding:5px 8px;border-bottom:1px solid var(--rule-2);vertical-align:middle;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  tbody tr:hover{background:var(--band)}
+  tbody tr.clickable{cursor:pointer}
+  td .code{font-weight:700;color:var(--navy)}
+  td .name{color:var(--ink-2)}
+  td .sub{font-size:12px;color:var(--ink-3)}
 
-  .tag {
-    display: inline-block; font-size: 10px; font-weight: 700;
-    padding: 2px 7px; border-radius: 10px;
-    background: var(--band); color: var(--ink-2); border: 1px solid var(--rule-2);
-  }
-  .tag.bhx { background: #FDEEF0; color: #B42318; border-color: #F2C6C9; }
-  .tag.wcm { background: #EEF4FB; color: #1F4E79; border-color: #C9DAED; }
-  .tag.both { background: #F4EBC8; color: #8A6600; border-color: #E5D28A; }
+  .tag{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;background:var(--band);color:var(--ink-2);border:1px solid var(--rule-2)}
+  .tag.bhx{background:#FDEEF0;color:#B42318;border-color:#F2C6C9}
+  .tag.wcm{background:#EEF4FB;color:#1F4E79;border-color:#C9DAED}
+  .tag.both{background:#F4EBC8;color:#8A6600;border-color:#E5D28A}
 
-  .num.neg { color: var(--neg); font-weight: 600; }
-  .num.pos { color: var(--pos); font-weight: 600; }
-  .num.warn { color: var(--warn); font-weight: 600; }
+  .num.neg{color:var(--neg);font-weight:600}
+  .num.pos{color:var(--pos);font-weight:600}
+  .num.warn{color:var(--warn);font-weight:600}
 
   /* Tree drill-down */
-  .tree-caret {
-    display: inline-block; width: 16px; text-align: center;
-    color: var(--ink-3); cursor: pointer; user-select: none;
-    transition: transform .12s ease; font-size: 11px;
-  }
-  .tree-caret.open { transform: rotate(90deg); }
-  .tree-caret.leaf { visibility: hidden; }
-  tr.group { cursor: pointer; }
-  tr.store-row td { background: #FBFCFE; }
-  tr.store-row:hover td { background: var(--band); }
-  td .grp-label { font-weight: 700; color: var(--navy); }
+  .tree-caret{display:inline-block;width:16px;text-align:center;color:var(--ink-3);cursor:pointer;user-select:none;transition:transform .12s ease;font-size:11px}
+  .tree-caret.open{transform:rotate(90deg)}
+  .tree-caret.leaf{visibility:hidden}
+  tr.group{cursor:pointer}
+  tr.store-row td{background:#FBFCFE}
+  tr.store-row:hover td{background:var(--band)}
+  td .grp-label{font-weight:700;color:var(--navy)}
 
-  .gdv-toggle { display: none; gap: 4px; }
-  .gdv-toggle button {
-    font: inherit; font-size: 12px; font-weight: 600;
-    padding: 4px 10px; border-radius: 14px;
-    border: 1px solid var(--rule); background: #fff;
-    color: var(--ink-2); cursor: pointer;
-  }
-  .gdv-toggle button.on { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .gdv-toggle{display:none;gap:4px}
+  .gdv-toggle button{font:inherit;font-size:12px;font-weight:600;padding:4px 10px;border-radius:14px;border:1px solid var(--rule);background:#fff;color:var(--ink-2);cursor:pointer}
+  .gdv-toggle button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
 
   /* Drawer */
-  .drawer {
-    position: fixed; top: 0; right: 0; bottom: 0;
-    width: min(640px,100vw); background: #fff;
-    box-shadow: -8px 0 30px #0A22402a; z-index: 200;
-    transform: translateX(100%); transition: transform .25s ease;
-    display: flex; flex-direction: column;
-  }
-  .drawer.open { transform: translateX(0); }
-  .drawer .d-head { padding: 18px 20px; border-bottom: 1px solid var(--rule); display: flex; align-items: flex-start; gap: 12px; }
-  .drawer .d-head h2 { font-size: 17px; font-weight: 700; color: var(--navy); margin: 0 0 4px; }
-  .drawer .d-head .close { margin-left: auto; background: none; border: 0; font-size: 24px; cursor: pointer; color: var(--ink-3); line-height: 1; }
-  .drawer .d-body { padding: 18px 20px; overflow-y: auto; flex: 1; }
-  .drawer .d-info { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; font-size: 13px; margin-bottom: 16px; }
-  .drawer .d-info .k { color: var(--ink-3); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; }
-  .drawer .d-info .v { color: var(--ink); }
-  .drawer .d-box { border: 1px solid var(--rule); border-radius: 10px; padding: 12px 14px; margin-bottom: 14px; }
-  .drawer .d-box h3 { font-size: 13px; font-weight: 700; color: var(--navy); margin: 0 0 8px; }
-  .drawer .d-seg { display: flex; gap: 4px; align-items: center; }
-  .drawer .d-seg button {
-    font: inherit; font-size: 12px; font-weight: 600;
-    padding: 5px 10px; border-radius: 14px;
-    border: 1px solid var(--rule); background: #fff;
-    color: var(--ink-2); cursor: pointer;
-  }
-  .drawer .d-seg button.on { background: var(--navy); color: #fff; border-color: var(--navy); }
-  .overlay {
-    position: fixed; inset: 0; background: #0A224066;
-    z-index: 150; opacity: 0; pointer-events: none; transition: opacity .25s;
-  }
-  .overlay.show { opacity: 1; pointer-events: auto; }
-  .d-wtbl { font-size: 12px; max-height: 340px; overflow-y: auto; }
-  .d-wtbl th { font-size: 10.5px; background: #f0f4f8; position: sticky; top: 0; }
-  .d-wtbl td { padding: 4px 8px; }
+  .drawer{position:fixed;top:0;right:0;bottom:0;width:min(640px,100vw);background:#fff;box-shadow:-8px 0 30px #0A22402a;z-index:200;transform:translateX(100%);transition:transform .25s ease;display:flex;flex-direction:column}
+  .drawer.open{transform:translateX(0)}
+  .drawer .d-head{padding:18px 20px;border-bottom:1px solid var(--rule);display:flex;align-items:flex-start;gap:12px}
+  .drawer .d-head h2{font-size:17px;font-weight:700;color:var(--navy);margin:0 0 4px}
+  .drawer .d-head .close{margin-left:auto;background:none;border:0;font-size:24px;cursor:pointer;color:var(--ink-3);line-height:1}
+  .drawer .d-body{padding:18px 20px;overflow-y:auto;flex:1}
+  .drawer .d-info{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;font-size:13px;margin-bottom:16px}
+  .drawer .d-info .k{color:var(--ink-3);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.03em}
+  .drawer .d-info .v{color:var(--ink)}
+  .drawer .d-box{border:1px solid var(--rule);border-radius:10px;padding:12px 14px;margin-bottom:14px}
+  .drawer .d-box h3{font-size:13px;font-weight:700;color:var(--navy);margin:0 0 8px}
+  .drawer .d-seg{display:flex;gap:4px;align-items:center}
+  .drawer .d-seg button{font:inherit;font-size:12px;font-weight:600;padding:5px 10px;border-radius:14px;border:1px solid var(--rule);background:#fff;color:var(--ink-2);cursor:pointer}
+  .drawer .d-seg button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+  .overlay{position:fixed;inset:0;background:#0A224066;z-index:150;opacity:0;pointer-events:none;transition:opacity .25s}
+  .overlay.show{opacity:1;pointer-events:auto}
+  .d-wtbl{font-size:12px;max-height:340px;overflow-y:auto}
+  .d-wtbl th{font-size:10.5px;background:#f0f4f8;position:sticky;top:0}
+  .d-wtbl td{padding:4px 8px}
 
   /* Loading */
-  .loading { display: flex; align-items: center; gap: 8px; padding: 8px 34px; font-size: 12px; color: var(--ink-3); }
-  .loading .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--sky); animation: pulse 1.2s infinite; }
-  .loading .dot:nth-child(2) { animation-delay: .2s; }
-  .loading .dot:nth-child(3) { animation-delay: .4s; }
-  @keyframes pulse { 0%,100% { opacity: .3; } 50% { opacity: 1; } }
+  .loading{display:flex;align-items:center;gap:8px;padding:8px 34px;font-size:12px;color:var(--ink-3)}
+  .loading .dot{width:8px;height:8px;border-radius:50%;background:var(--sky);animation:pulse 1.2s infinite}
+  .loading .dot:nth-child(2){animation-delay:.2s}
+  .loading .dot:nth-child(3){animation-delay:.4s}
+  @keyframes pulse{0%,100%{opacity:.3}50%{opacity:1}}
 
   /* Footer */
-  .foot { padding: 16px 34px 30px; color: var(--ink-3); font-size: 12px; border-top: 1px solid var(--rule); }
-  .foot a { color: var(--sky); }
+  .foot{padding:16px 34px 30px;color:var(--ink-3);font-size:12px;border-top:1px solid var(--rule)}
+  .foot a{color:var(--sky)}
 
   /* Version badge */
-  .ver-badge {
-    display: inline-block; font-size: 11px; font-weight: 600; color: #fff;
-    background: var(--navy); padding: 2px 10px; border-radius: 10px;
-    margin-left: 10px; vertical-align: middle; letter-spacing: .02em;
-  }
+  .ver-badge{display:inline-block;font-size:11px;font-weight:600;color:#fff;background:var(--navy);padding:2px 10px;border-radius:10px;margin-left:10px;vertical-align:middle;letter-spacing:.02em}
 
   /* Rules section */
-  #rules-section { padding: 20px 34px; }
-  .rules-wrap { max-width: 900px; margin: 0 auto; font-size: 14px; line-height: 1.8; color: var(--ink); }
-  .rules-wrap .card { background: #fff; border-radius: 10px; padding: 24px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+  #rules-section{padding:20px 34px}
+  .rules-wrap{max-width:900px;margin:0 auto;font-size:14px;line-height:1.8;color:var(--ink)}
+  .rules-wrap .card{background:#fff;border-radius:10px;padding:24px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
 
   /* Responsive */
-  @media (max-width: 1100px) {
-    .dashboard-grid { gap: 10px; }
-    .kpi-card .kval { font-size: 20px; }
+  @media (max-width:1100px){
+    .kpi-card .kval{font-size:20px}
   }
-  @media (max-width: 800px) {
-    .dashboard-grid { grid-template-columns: 1fr; gap: 12px; }
-    .col-left,.col-right { grid-column: 1 / -1; grid-row: auto; }
-    .cell-chart,.cell-kpi,.cell-filter,.cell-stores,.cell-threat-detail { max-height: none; }
-    .canvas-box { height: 260px; }
-    .mast,.fbar,.vtabs,.dashboard-grid,.foot { padding-left: 14px; padding-right: 14px; }
+  @media (max-width:800px){
+    .content-grid{grid-template-columns:1fr;gap:12px}
+    .kpi-row-full{grid-template-columns:repeat(2,1fr)}
+    .panel.has-scroll{flex:auto;min-height:220px}
+    .panel .canvas-box{min-height:260px}
+    .mast,.vtabs,.filter-bar-full,.kpi-row-full,.content-grid,.foot{padding-left:14px;padding-right:14px}
+  }
+  @media (max-width:480px){
+    .kpi-row-full{grid-template-columns:1fr}
+    .filter-bar-full{flex-direction:column;align-items:stretch}
+    .filter-bar-full .fld{width:100%}
+    .filter-bar-full .fld select,.filter-bar-full .fld input{width:100%}
   }
 </style>
 </head>
@@ -338,7 +183,7 @@
 
   <header class="mast">
     <div class="kicker">Winmart+ Miền Bắc · LFL W0–W52 · W8 baseline · 282 CH · 13 Tỉnh</div>
-    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.2 · 23/10/2026</span></h1>
+    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.3 · 23/10/2026</span></h1>
     <p class="sub">Phân tích tác động (impact) của đối thủ BHX / WCM / BHX+WCM — Before/After &amp; Control breakdown · Số liệu SPD &amp; BPD</p>
     <div class="meta" id="meta-line"></div>
   </header>
@@ -348,15 +193,38 @@
     <span class="dot"></span><span class="dot"></span><span class="dot"></span>
   </div>
 
+  <!-- HÀNG 0: View Tabs -->
   <div class="vtabs" id="vtabs"></div>
 
-  <!-- 2-COLUMN LAYOUT (v4.2) -->
-  <div class="dashboard-grid" id="dashboard-grid">
-    <!-- CỘT TRÁI: Affect by Stores + Affect by selected threat -->
-    <div class="col-left" id="col-left">
-      <!-- Trên: Affect by Stores (expandable tree) -->
-      <div class="grid-cell cell-stores" id="cell-stores">
-        <div class="cell-title">Affect by Stores</div>
+  <!-- HÀNG 1 (full width): Bộ lọc chung -->
+  <div class="filter-bar-full" id="filter-bar-full">
+    <div class="fld"><label>Loại đối thủ</label><select id="f-threat"></select></div>
+    <div class="fld"><label>Khoảng cách</label><select id="f-dist"></select></div>
+    <div class="fld"><label>Tỉnh / TP</label><select id="f-prov"></select></div>
+    <div class="fld"><label>Từ tuần</label><select id="f-wfrom"></select></div>
+    <div class="fld"><label>Đến tuần</label><select id="f-wto"></select></div>
+    <div class="mt-bar" style="padding:0;align-self:flex-end;margin-bottom:2px">
+      <span class="lbl">Chỉ số:</span>
+      <div class="seg" id="metric-seg">
+        <button data-m="spd" class="on">SPD (tr/ngày)</button>
+        <button data-m="bpd">BPD (bill/ngày)</button>
+      </div>
+    </div>
+    <div style="margin-left:auto;align-self:flex-end;margin-bottom:2px">
+      <button class="btn" id="btn-reset">↺ Đặt lại</button>
+    </div>
+  </div>
+
+  <!-- HÀNG 2 (full width): KPI Cards — 1 dòng ngang -->
+  <div class="kpi-row-full" id="kpi-section"></div>
+
+  <!-- HÀNG 3: 2 cột 50/50 -->
+  <div class="content-grid" id="content-grid">
+    <!-- Cột trái: Affect by Stores + Affect by selected threat -->
+    <div class="col-l" id="col-left">
+      <!-- Trên: Affect by Stores (tree table) -->
+      <div class="panel has-scroll" id="cell-stores">
+        <div class="panel-title">Affect by Stores</div>
         <div class="t-head">
           <h2 id="tbl-title">🏪 Cửa hàng</h2>
           <span class="cnt" id="tbl-cnt"></span>
@@ -367,7 +235,7 @@
       </div>
 
       <!-- Dưới: Affect by selected threat (store table) -->
-      <div class="grid-cell cell-threat-detail" id="cell-threat-detail">
+      <div class="panel has-scroll" id="cell-threat-detail">
         <div class="t-head">
           <h2 id="td-title">Affect by selected threat</h2>
           <span class="cnt" id="td-cnt"></span>
@@ -376,40 +244,10 @@
       </div>
     </div>
 
-    <!-- CỘT PHẢI: Filter chung + KPI + Chart -->
-    <div class="col-right" id="col-right">
-      <!-- Filter chung (trên cùng) -->
-      <div class="grid-cell cell-filter" id="cell-filter">
-        <div class="cell-title">🔍 Bộ lọc chung</div>
-        <div class="filter-row">
-          <div class="fld"><label>Loại đối thủ</label><select id="f-threat"></select></div>
-          <div class="fld"><label>Khoảng cách</label><select id="f-dist"></select></div>
-          <div class="fld"><label>Tỉnh / TP</label><select id="f-prov"></select></div>
-          <div class="fld"><label>Từ tuần</label><select id="f-wfrom"></select></div>
-          <div class="fld"><label>Đến tuần</label><select id="f-wto"></select></div>
-        </div>
-        <div class="filter-row">
-          <div class="mt-bar" style="padding:0">
-            <span class="lbl">Chỉ số:</span>
-            <div class="seg" id="metric-seg">
-              <button data-m="spd" class="on">SPD (tr/ngày)</button>
-              <button data-m="bpd">BPD (bill/ngày)</button>
-            </div>
-          </div>
-          <div class="spacer"></div>
-          <button class="btn" id="btn-reset">↺ Đặt lại</button>
-        </div>
-      </div>
-
-      <!-- KPI cards -->
-      <div class="grid-cell cell-kpi" id="cell-kpi">
-        <div class="cell-title">Các chỉ số highlight</div>
-        <div class="kpi-section" id="kpi-section"></div>
-      </div>
-
-      <!-- Chart: NET Impact — Threat by Week -->
-      <div class="grid-cell cell-chart" id="cell-chart">
-        <div class="cell-title" id="chart-title">NET Impact — Threat by Week (W0–W52)</div>
+    <!-- Cột phải: Chart NET Impact -->
+    <div class="col-r" id="col-right">
+      <div class="panel" id="cell-chart" style="flex:1;min-height:500px">
+        <div class="panel-title" id="chart-title">NET Impact — Threat by Week (W0–W52)</div>
         <div class="canvas-box"><canvas id="chart"></canvas></div>
       </div>
     </div>
@@ -1093,7 +931,8 @@ function renderAll(){
   renderTabs();
   if(state.view==='rules'){ renderRules(); return; }
   // Show grid elements
-  $('#dashboard-grid').style.display = '';
+  $('#content-grid').style.display = '';
+  $('#kpi-section').style.display = '';
   $('#meta-line').style.display = '';
   const rulesEl = $('#rules-section');
   if(rulesEl) rulesEl.style.display = 'none';
@@ -1113,7 +952,8 @@ function renderAll(){
 
 /* ---------- Rules tab ---------- */
 function renderRules(){
-  $('#dashboard-grid').style.display = 'none';
+  $('#content-grid').style.display = 'none';
+  $('#kpi-section').style.display = 'none';
   $('#meta-line').style.display = 'none';
   const rulesEl = $('#rules-section');
   rulesEl.style.display = 'block';
@@ -1214,6 +1054,6 @@ bindEvents();
 renderAll();
 fetchStorelist();
 
-</script>
+
 </body>
 </html>
