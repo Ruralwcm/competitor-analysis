@@ -203,7 +203,7 @@
 
   <header class="mast">
     <div class="kicker">Winmart+ Miền Bắc · LFL W0–W52 · W8 baseline · 282 CH · 13 Tỉnh</div>
-    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.7 · 23/10/2026</span></h1>
+    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.8 · 23/10/2026</span></h1>
     <p class="sub">Phân tích tác động (impact) của đối thủ BHX / WCM / BHX+WCM — Before/After &amp; Control breakdown · Số liệu SPD &amp; BPD</p>
     <div class="meta" id="meta-line"></div>
   </header>
@@ -221,8 +221,6 @@
     <div class="fld"><label>Loại đối thủ</label><select id="f-threat"></select></div>
     <div class="fld"><label>Khoảng cách</label><select id="f-dist"></select></div>
     <div class="fld"><label>Tỉnh / TP</label><select id="f-prov"></select></div>
-    <div class="fld"><label>Từ tuần</label><select id="f-wfrom"></select></div>
-    <div class="fld"><label>Đến tuần</label><select id="f-wto"></select></div>
     <div class="mt-bar" style="padding:0;align-self:flex-end;margin-bottom:2px">
       <span class="lbl">Chỉ số:</span>
       <div class="seg" id="metric-seg">
@@ -662,8 +660,8 @@ function renderTable(){
     const head = `<colgroup>
     <col style="width:30px"><col style="width:13%"><col style="width:5%">
     <col style="width:4.5%"><col style="width:4.5%"><col style="width:5.5%">
-    <col style="width:5.5%"><col style="width:5.5%"><col style="width:5.5%">
-    <col style="width:5.5%"><col style="width:5.5%"><col style="width:5.5%"><col style="width:5.5%">
+    <col style="width:6%"><col style="width:6%"><col style="width:5.5%">
+    <col style="width:6%"><col style="width:6%"><col style="width:5.5%"><col style="width:6.5%"><col style="width:6.5%">
   </colgroup><thead><tr>
     <th></th><th>Tỉnh</th><th class="num">SL CH</th>
     <th class="num">WCM</th><th class="num">BHX</th><th class="num">BHX+<br>WCM</th>
@@ -723,8 +721,8 @@ function renderTable(){
 
     const head = `<colgroup>
     <col style="width:28px"><col style="width:18%"><col style="width:5%">
-    <col style="width:6%"><col style="width:6%"><col style="width:6%">
-    <col style="width:6%"><col style="width:6%"><col style="width:6%">
+    <col style="width:6%"><col style="width:6%"><col style="width:5.5%">
+    <col style="width:6%"><col style="width:6%"><col style="width:5.5%">
     <col style="width:6.5%"><col style="width:6.5%">
   </colgroup><thead><tr>
     <th></th><th>Tên</th><th class="num">SL CH</th>
@@ -1025,9 +1023,6 @@ function populateFilters(){
   $('#f-threat').innerHTML = thr.map(x=>`<option value="${x}">${x==='all'?'Tất cả':x}</option>`).join('');
   $('#f-dist').innerHTML = dist.map(x=>`<option value="${x}">${x==='all'?'Tất cả':x}</option>`).join('');
   $('#f-prov').innerHTML = prov.map(x=>`<option value="${x}">${x==='all'?'Tất cả':x}</option>`).join('');
-  $('#f-wfrom').innerHTML = W.map((w,i)=>`<option value="${i}">${w}</option>`).join('');
-  $('#f-wto').innerHTML = W.map((w,i)=>`<option value="${i}">${w}</option>`).join('');
-  $('#f-wto').value = '52';
 }
 
 /* ---------- View tabs ---------- */
@@ -1163,9 +1158,7 @@ function bindEvents(){
   $('#f-threat').addEventListener('change',e=>{ state.threat=e.target.value; expanded.clear(); selectedProvince=null; selectedDistrict=null; renderAll(); });
   $('#f-dist').addEventListener('change',e=>{ state.dist=e.target.value; expanded.clear(); selectedProvince=null; selectedDistrict=null; renderAll(); });
   $('#f-prov').addEventListener('change',e=>{ state.prov=e.target.value; expanded.clear(); selectedProvince=null; selectedDistrict=null; renderAll(); });
-  $('#f-wfrom').addEventListener('change',e=>{ state.wfrom=+e.target.value; if(state.wfrom>state.wto){state.wto=state.wfrom; $('#f-wto').value=state.wfrom;} expanded.clear(); selectedProvince=null; selectedDistrict=null; renderAll(); });
-  $('#f-wto').addEventListener('change',e=>{ state.wto=+e.target.value; if(state.wto<state.wfrom){state.wfrom=state.wto; $('#f-wfrom').value=state.wto;} expanded.clear(); selectedProvince=null; selectedDistrict=null; renderAll(); });
-  $('#btn-reset').addEventListener('click',()=>{ Object.assign(state,{view:'province',gdvMode:'rsm',threat:'all',dist:'all',prov:'all',wfrom:0,wto:52}); expanded.clear(); selectedProvince=null; selectedDistrict=null; $('#f-threat').value='all'; $('#f-dist').value='all'; $('#f-prov').value='all'; $('#f-wfrom').value='0'; $('#f-wto').value='52'; renderAll(); });
+  $('#btn-reset').addEventListener('click',()=>{ Object.assign(state,{view:'province',gdvMode:'rsm',threat:'all',dist:'all',prov:'all',wfrom:0,wto:52}); expanded.clear(); selectedProvince=null; selectedDistrict=null; $('#f-threat').value='all'; $('#f-dist').value='all'; $('#f-prov').value='all'; renderAll(); });
   // Unified metric toggle (shared across all panels)
   $('#metric-seg').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
     state.tableMetric = b.dataset.m;
