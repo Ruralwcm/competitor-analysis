@@ -212,7 +212,7 @@
 <div class="page">
 
   <header class="mast">
-    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.29 · 23/10/2026</span></h1>
+    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.30 · 23/10/2026</span></h1>
     <p class="sub">BHX / WCM / BHX+WCM · LFL W0–W52 · 282 CH</p>
   </header>
 
@@ -270,7 +270,15 @@
       <!-- 4 KPI box text -->
       <div class="kpi-row-full" id="kpi-section"></div>
       <div class="panel" id="cell-threat-week" style="flex:0 0 auto">
-        <div class="panel-title">📊 Threat by Week — %NET Impact <span style="font-size:10px;color:var(--ink-3);font-weight:400;text-transform:none">(âm = mất, dương = tăng · hiển thị mỗi 4 tuần)</span></div>
+        <div class="panel-title" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <span>📊 Threat by Week — %NET Impact</span>
+          <span style="font-size:10px;color:var(--ink-3);font-weight:400;text-transform:none">(mỗi 4 tuần · âm = mất, dương = tăng)</span>
+          <span style="margin-left:auto;display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:400;text-transform:none">
+            <span style="color:#B91C1C">Đỏ (xấu)</span>
+            <span style="display:inline-block;width:90px;height:8px;border-radius:4px;background:linear-gradient(90deg,#DC2626,#F3F4F6,#16A34A)"></span>
+            <span style="color:#15803D">Xanh (tốt)</span>
+          </span>
+        </div>
         <div class="tbl-scroll" style="max-height:300px"><table id="tw-tbl" class="tw-tbl"></table></div>
       </div>
       <div class="panel" id="cell-chart" style="flex:0 0 auto">
