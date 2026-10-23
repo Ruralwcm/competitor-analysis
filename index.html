@@ -102,8 +102,7 @@
   /* Table styles */
   table{width:100%;border-collapse:collapse;font-size:12.5px;table-layout:fixed}
   thead th{position:sticky;top:0;background:var(--band);color:var(--ink-2);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;text-align:center;padding:7px 8px;border-bottom:2px solid var(--rule);white-space:normal;word-wrap:break-word;overflow-wrap:break-word;cursor:pointer;user-select:none;z-index:2;line-height:1.25}
-  thead th.num,tbody td.num{text-align:right;font-variant-numeric:tabular-nums}
-  thead th.col-net{background:#EEF4FB;color:var(--steel)}
+  tbody td.num{text-align:right;font-variant-numeric:tabular-nums}  thead th.col-net{background:#EEF4FB;color:var(--steel)}
   thead th.col-before{background:#FFF8F0;color:#8A6600}
   thead th.col-after{background:#F0FFF4;color:var(--pos)}
   thead th.col-impact,.col-impact-hdr{background:#EEF4FB;color:var(--steel)}
@@ -203,7 +202,7 @@
 
   <header class="mast">
     <div class="kicker">Winmart+ Miền Bắc · LFL W0–W52 · W8 baseline · 282 CH · 13 Tỉnh</div>
-    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.8 · 23/10/2026</span></h1>
+    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.9 · 23/10/2026</span></h1>
     <p class="sub">Phân tích tác động (impact) của đối thủ BHX / WCM / BHX+WCM — Before/After &amp; Control breakdown · Số liệu SPD &amp; BPD</p>
     <div class="meta" id="meta-line"></div>
   </header>
@@ -632,8 +631,7 @@ function renderTable(){
         const indent = `<span style="display:inline-block;width:${depth*20}px"></span>`;
         const caret = `<span class="tree-caret ${open?'open':''}">▶</span>`;
         body.push(`<tr class="prov-row clickable" data-key="${node.key}" style="${isSel?'background:#E6EDF6;font-weight:700':''}">
-    <td>${indent}${caret}</td>
-    <td><span class="grp-label">${node.label}</span></td>
+    <td>${indent}${caret}<span class="grp-label">${node.label}</span></td>
     <td class="num">${node.agg.n}</td>
     <td class="num">${node.wcm||0}</td><td class="num">${node.bhx||0}</td><td class="num">${node.both||0}</td>
     ${kpiCells(node.agg, m)}
@@ -645,8 +643,7 @@ function renderTable(){
             const dSel = selectedDistrict===d.key;
             const dIndent = `<span style="display:inline-block;width:${(depth+1)*20+18}px"></span>`;
             body.push(`<tr class="dist-row clickable" data-key="${d.key}" style="${dSel?'background:#E6EDF6;font-weight:700':''}">
-    <td>${dIndent}</td>
-    <td><span class="grp-label">${d.label}</span></td>
+    <td>${dIndent}<span class="grp-label">${d.label}</span></td>
     <td class="num">${d.agg.n}</td>
     <td class="num">${d.wcm||0}</td><td class="num">${d.bhx||0}</td><td class="num">${d.both||0}</td>
     ${kpiCells(d.agg, m)}
@@ -658,12 +655,12 @@ function renderTable(){
     walk(nodes, 0);
 
     const head = `<colgroup>
-    <col style="width:30px"><col style="width:13%"><col style="width:5%">
-    <col style="width:4.5%"><col style="width:4.5%"><col style="width:5.5%">
-    <col style="width:6%"><col style="width:6%"><col style="width:5.5%">
-    <col style="width:6%"><col style="width:6%"><col style="width:5.5%"><col style="width:6.5%"><col style="width:6.5%">
+    <col style="width:20%"><col style="width:5%">
+    <col style="width:4%"><col style="width:4%"><col style="width:7%">
+    <col style="width:7.5%"><col style="width:7.5%"><col style="width:7%">
+    <col style="width:7.5%"><col style="width:7.5%"><col style="width:7%"><col style="width:8%"><col style="width:8%">
   </colgroup><thead><tr>
-    <th></th><th>Tỉnh</th><th class="num">SL CH</th>
+    <th>Tỉnh</th><th class="num">SL CH</th>
     <th class="num">WCM</th><th class="num">BHX</th><th class="num">BHX+<br>WCM</th>
     <th class="num col-before">Base ${unit}</th>
     <th class="num col-after">Actual ${unit}</th>
@@ -712,7 +709,6 @@ function renderTable(){
       count++;
       const isSel = selectedProvince===node.key;
       body.push(`<tr class="group-row clickable" data-key="${node.key}" style="${isSel?'background:#E6EDF6;font-weight:700':''}">
-    <td></td>
     <td><span class="grp-label">${node.label}</span></td>
     <td class="num">${node.agg.n}</td>
     ${kpiCells(node.agg, m)}
@@ -720,12 +716,11 @@ function renderTable(){
     }
 
     const head = `<colgroup>
-    <col style="width:28px"><col style="width:18%"><col style="width:5%">
-    <col style="width:6%"><col style="width:6%"><col style="width:5.5%">
-    <col style="width:6%"><col style="width:6%"><col style="width:5.5%">
-    <col style="width:6.5%"><col style="width:6.5%">
+    <col style="width:35%"><col style="width:5%">
+    <col style="width:7.5%"><col style="width:7.5%"><col style="width:7%">
+    <col style="width:7.5%"><col style="width:7.5%"><col style="width:7%"><col style="width:8%"><col style="width:8%">
   </colgroup><thead><tr>
-    <th></th><th>Tên</th><th class="num">SL CH</th>
+    <th>Tên</th><th class="num">SL CH</th>
     <th class="num col-before">Base ${unit}</th>
     <th class="num col-after">Actual ${unit}</th>
     <th class="num col-impact-hdr">%Imp</th>
@@ -807,10 +802,10 @@ function renderThreatDetailTable(){
     </tr>`;
   }
   $('#td-tbl').innerHTML = `<colgroup>
-    <col style="width:16%"><col style="width:9%"><col style="width:7.5%"><col style="width:7.5%">
-    <col style="width:6%"><col style="width:6%"><col style="width:5.5%">
-    <col style="width:6%"><col style="width:6%"><col style="width:5.5%">
-    <col style="width:6.5%"><col style="width:6.5%">
+    <col style="width:17%"><col style="width:8%"><col style="width:7.5%"><col style="width:7.5%">
+    <col style="width:7.5%"><col style="width:7.5%"><col style="width:7%">
+    <col style="width:7.5%"><col style="width:7.5%"><col style="width:7%">
+    <col style="width:8%"><col style="width:8%">
   </colgroup><thead><tr>
     <th>Tên Site</th><th>Threat</th><th>Ngày mở</th><th>K. cách</th>
     <th class="num col-before">Base ${unit}</th>
