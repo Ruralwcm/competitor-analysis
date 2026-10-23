@@ -135,11 +135,11 @@
   tr.store-row:hover td{background:var(--band)}
   td .grp-label{font-weight:700;color:var(--navy)}
   /* Threat-by-Week pivot */
-  table.tw-tbl{font-size:11px;table-layout:fixed}
+  table.tw-tbl{font-size:11px;table-layout:fixed;width:830px}
   table.tw-tbl thead th{position:sticky;top:0;z-index:2;background:var(--band);font-size:9.5px;padding:5px 3px}
-  table.tw-tbl th.tw-r,table.tw-tbl td.tw-r{position:sticky;left:0;background:var(--band);z-index:1;font-weight:700;text-align:left;white-space:nowrap;padding:5px 8px;min-width:140px}
-  table.tw-tbl th.tw-w{min-width:34px}
-  table.tw-tbl th.tw-ch,table.tw-tbl td.tw-ch{min-width:42px}
+  table.tw-tbl th.tw-r,table.tw-tbl td.tw-r{position:sticky;left:0;background:var(--band);z-index:1;font-weight:700;text-align:left;white-space:nowrap;padding:5px 8px;width:200px;box-sizing:border-box}
+  table.tw-tbl th.tw-w{width:38px}
+  table.tw-tbl th.tw-ch,table.tw-tbl td.tw-ch{width:46px}
   table.tw-tbl tr.tw-row{cursor:pointer}
   table.tw-tbl tr.tw-sub td.tw-r{background:#F6F9FC}
   table.tw-tbl tbody td.num{padding:5px 3px;text-align:center}
@@ -211,10 +211,8 @@
 <div class="page">
 
   <header class="mast">
-    <div class="kicker">Winmart+ Miền Bắc · LFL W0–W52 · W8 baseline · 282 CH · 13 Tỉnh</div>
-    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.21 · 23/10/2026</span></h1>
-    <p class="sub">Phân tích tác động (impact) của đối thủ BHX / WCM / BHX+WCM — Before/After &amp; Control breakdown · Số liệu SPD &amp; BPD</p>
-    <div class="meta" id="meta-line"></div>
+    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.22 · 23/10/2026</span></h1>
+    <p class="sub">BHX / WCM / BHX+WCM · LFL W0–W52 · 282 CH</p>
   </header>
 
   <div class="loading" id="loading">
@@ -274,9 +272,9 @@
         <div class="panel-title">📊 Threat by Week — %NET Impact <span style="font-size:10px;color:var(--ink-3);font-weight:400;text-transform:none">(âm = mất, dương = tăng · hiển thị mỗi 4 tuần)</span></div>
         <div class="tbl-scroll" style="max-height:300px"><table id="tw-tbl" class="tw-tbl"></table></div>
       </div>
-      <div class="panel" id="cell-chart" style="flex:1;min-height:400px">
+      <div class="panel" id="cell-chart" style="flex:0 0 auto">
         <div class="panel-title" id="chart-title">NET Impact — Threat by Week (W0–W52)</div>
-        <div class="canvas-box"><canvas id="chart"></canvas></div>
+        <div class="canvas-box" style="height:360px"><canvas id="chart"></canvas></div>
       </div>
     </div>
   </div>
@@ -607,7 +605,11 @@ function renderThreatWeekTable(){
     return cells;
   };
 
-  let head = '<thead><tr><th class="tw-r">Threat</th><th class="num tw-ch">Số CH</th>';
+  let colg = '<colgroup><col style="width:200px"><col style="width:46px">';
+  for(const w of weeks) colg += '<col style="width:38px">';
+  colg += '<col style="width:52px"></colgroup>';
+
+  let head = colg + '<thead><tr><th class="tw-r">Threat</th><th class="num tw-ch">Số CH</th>';
   for(const w of weeks) head += `<th class="num tw-w">${W[w]}</th>`;
   head += '<th class="num tw-w tw-avg" title="Trung bình W0–W52">TB</th></tr></thead>';
 
@@ -1210,7 +1212,6 @@ function renderAll(){
   // Show grid elements
   $('#content-grid').style.display = '';
   $('#kpi-section').style.display = '';
-  $('#meta-line').style.display = '';
   const rulesEl = $('#rules-section');
   if(rulesEl) rulesEl.style.display = 'none';
 
@@ -1223,16 +1224,12 @@ function renderAll(){
   renderThreatDetailTable();
   renderChart(codes);
   renderThreatWeekTable();
-
-  const metricLabel = state.tableMetric==='spd'?'SPD (tr/ngày)':'BPD (bill/ngày)';
-  $('#meta-line').innerHTML = `<span>${DATA.meta.n_stores} cửa hàng</span><span>${DATA.meta.generated}</span><span>Threat: ${state.threat==='all'?'Tất cả':state.threat}</span><span>Khoảng cách: ${state.dist==='all'?'Tất cả':state.dist}</span><span>Tuần: ${W[state.wfrom]}–${W[state.wto]}</span><span>Chỉ số: ${metricLabel}</span>`;
 }
 
 /* ---------- Rules tab ---------- */
 function renderRules(){
   $('#content-grid').style.display = 'none';
   $('#kpi-section').style.display = 'none';
-  $('#meta-line').style.display = 'none';
   const rulesEl = $('#rules-section');
   rulesEl.style.display = 'block';
   rulesEl.innerHTML = `
