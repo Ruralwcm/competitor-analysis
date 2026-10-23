@@ -127,6 +127,9 @@
   .drawer .d-info .v{color:var(--ink)}
   .drawer .d-box{border:1px solid var(--rule);border-radius:10px;padding:12px 14px;margin-bottom:14px}
   .drawer .d-box h3{font-size:13px;font-weight:700;color:var(--navy);margin:0 0 8px}
+  .drawer .d-seg{display:flex;gap:4px;align-items:center}
+  .drawer .d-seg button{font:inherit;font-size:12px;font-weight:600;padding:5px 10px;border-radius:14px;border:1px solid var(--rule);background:#fff;color:var(--ink-2);cursor:pointer}
+  .drawer .d-seg button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
   .overlay{position:fixed;inset:0;background:#0A224066;z-index:150;opacity:0;pointer-events:none;transition:opacity .25s}
   .overlay.show{opacity:1;pointer-events:auto}
 
@@ -250,10 +253,12 @@ const state = {
   wto: 52,
   chartMetric: 'spd',
   tableMetric: 'spd',
+  drawerMetric: 'spd',
   search: '',
   storelistReady: false
 };
 const expanded = new Set(); // keys of open group rows
+let drawerCode = null;      // code of store currently open in drawer
 
 /* ---------- storelist embedded ---------- */
 function fetchStorelist(){
@@ -430,9 +435,12 @@ function buildThreatTree(codes){
     (map[t] = map[t] || []).push(c);
   }
   const order = ['BHX','WCM','BHX + WCM'];
-  const nodes = Object.keys(map).map(t => ({
-    kind:'group', level:1, expandable:false, key:'thr:'+t, label:t, agg: aggregateCodes(map[t]), children:[]
-  }));
+  const nodes = Object.keys(map).map(t => {
+    const tCodes = map[t];
+    const storeNodes = tCodes.map(c => ({kind:'store', key:c, label:c, agg:storeAgg(c)}));
+    storeNodes.sort(byNs);
+    return { kind:'group', level:1, expandable:true, key:'thr:'+t, label:t, agg: aggregateCodes(tCodes), children: storeNodes };
+  });
   nodes.sort((a,b)=> order.indexOf(a.label) - order.indexOf(b.label));
   return nodes;
 }
@@ -537,6 +545,7 @@ function nodeMatches(node){
 function renderTable(){
   const m = state.tableMetric;
   const unit = m==='spd' ? 'SPD (tr/ngày)' : 'BPD (bill/ngày)';
+  const isThreat = state.view==='threat';
   const nodes = buildTree();
   const body = [];
   let count = 0;
@@ -545,17 +554,19 @@ function renderTable(){
       if(!nodeMatches(node)) continue;
       count++;
       if(node.kind==='store'){
-        body.push(renderStoreRow(node, depth, m));
+        body.push(isThreat ? renderThreatStoreRow(node, depth) : renderStoreRow(node, depth, m));
       } else {
         const open = expanded.has(node.key);
-        body.push(renderGroupRow(node, depth, m, open));
+        body.push(renderGroupRow(node, depth, m, open, isThreat));
         if(node.expandable && open) walk(node.children, depth+1);
       }
     }
   };
   walk(nodes, 0);
-  $('#tbl').innerHTML =
-    `<thead><tr><th></th><th>Tên</th><th class="num">Số CH</th><th class="num col-net">NET Imp ${unit}</th><th class="num col-net">NET % Impact</th></tr></thead><tbody>${body.join('')}</tbody>`;
+  const head = isThreat
+    ? `<thead><tr><th></th><th>Tên Site</th><th>Ngày mở</th><th>Khoảng cách</th><th>Block khoảng cách</th><th class="num col-net">NET Impact SPD</th><th class="num col-net">NET % Impact</th></tr></thead>`
+    : `<thead><tr><th></th><th>Tên</th><th class="num">Số CH</th><th class="num col-net">NET Imp ${unit}</th><th class="num col-net">NET % Impact</th></tr></thead>`;
+  $('#tbl').innerHTML = head + `<tbody>${body.join('')}</tbody>`;
   $('#tbl-cnt').textContent = `${count} dòng`;
   $('#tbl').querySelectorAll('tr.group').forEach(tr=>{
     tr.addEventListener('click', ()=>{
@@ -570,11 +581,20 @@ function renderTable(){
   });
 }
 
-function renderGroupRow(node, depth, m, open){
+function renderGroupRow(node, depth, m, open, isThreat){
   const indent = `<span style="display:inline-block;width:${depth*20}px"></span>`;
   const caret = node.expandable===false
     ? `<span class="tree-caret leaf">▶</span>`
     : `<span class="tree-caret ${open?'open':''}">▶</span>`;
+  if(isThreat){
+    return `<tr class="group" data-key="${node.key}" data-exp="${node.expandable===false?'0':'1'}">
+      <td>${indent}${caret}</td>
+      <td><span class="grp-label">${node.label}</span></td>
+      <td colspan="3"></td>
+      <td class="num col-net ${signCls(node.agg.ns)}"><b>${fmt(node.agg.ns)}</b></td>
+      <td class="num col-net ${signCls(node.agg.ps)}"><b>${fmtPct(node.agg.ps)}</b></td>
+    </tr>`;
+  }
   return `<tr class="group" data-key="${node.key}" data-exp="${node.expandable===false?'0':'1'}">
     <td>${indent}${caret}</td>
     <td><span class="grp-label">${node.label}</span></td>
@@ -594,18 +614,46 @@ function renderStoreRow(node, depth, m){
   </tr>`;
 }
 
+function distanceBlockCls(d){
+  if(d==='<100m') return '#FDEEF0';
+  if(d==='100–300m') return '#FFF3E0';
+  if(d==='300–500m') return '#FFF9E0';
+  if(d==='500m–1km') return '#EEF4FB';
+  return 'var(--band)';
+}
+function renderThreatStoreRow(node, depth){
+  const s = DATA.stores[node.key];
+  const a = node.agg;
+  const indent = `<span style="display:inline-block;width:${depth*20+18}px"></span>`;
+  return `<tr class="store-row clickable" data-code="${node.key}">
+    <td>${indent}</td>
+    <td><span class="code">${node.key}</span> <span class="name">${s.n||''}</span></td>
+    <td>${s.w0||'—'}</td>
+    <td>${s.d||'—'}</td>
+    <td><span style="display:inline-block;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:10px;background:${distanceBlockCls(s.d)};border:1px solid var(--rule-2)">${s.d||'—'}</span></td>
+    <td class="num col-net ${signCls(a.ns)}"><b>${fmt(a.ns)}</b></td>
+    <td class="num col-net ${signCls(a.ps)}"><b>${fmtPct(a.ps)}</b></td>
+  </tr>`;
+}
+
 /* ---------- drawer ---------- */
 function openDrawer(code){
+  drawerCode = code;
   const s = DATA.stores[code];
   const agg = storeAgg(code);
   const series = DATA.series[code];
-  const m = state.tableMetric;
+  const m = state.drawerMetric;
   const isS = m==='spd';
   $('#drawer').innerHTML = `
     <div class="d-head">
-      <div>
+      <div style="flex:1">
         <div style="font-size:11px;color:var(--sky);font-weight:700;text-transform:uppercase;letter-spacing:.06em">Chi tiết cửa hàng</div>
         <h2>${code} — ${s.n||''}</h2>
+      </div>
+      <div class="d-seg" id="d-metric-seg">
+        <span style="font-size:11px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.03em">Chỉ số</span>
+        <button data-m="spd" class="${m==='spd'?'on':''}">SPD (tr/ngày)</button>
+        <button data-m="bpd" class="${m==='bpd'?'on':''}">BPD (bill/ngày)</button>
       </div>
       <button class="close" id="d-close">×</button>
     </div>
@@ -657,7 +705,7 @@ function openDrawer(code){
       </div>
 
       <div class="d-box">
-        <h3>NET Impact ${isS?'SPD (tr/ngày)':'BPD (bill/ngày)'} theo tuần</h3>
+        <h3>Impact theo tuần — Threat vs Control (${isS?'SPD (tr/ngày)':'BPD (bill/ngày)'})</h3>
         <div style="position:relative;height:220px"><canvas id="d-chart"></canvas></div>
       </div>
 
@@ -670,6 +718,11 @@ function openDrawer(code){
   $('#overlay').classList.add('show');
   $('#d-close').addEventListener('click', closeDrawer);
   $('#overlay').addEventListener('click', closeDrawer);
+  $('#d-metric-seg').querySelectorAll('button').forEach(b=>b.addEventListener('click', ()=>{
+    if(state.drawerMetric===b.dataset.m) return;
+    state.drawerMetric = b.dataset.m;
+    openDrawer(drawerCode);
+  }));
   drawStoreChart(code);
   buildStoreTable(code);
 }
@@ -677,27 +730,38 @@ function closeDrawer(){ $('#drawer').classList.remove('open'); $('#overlay').cla
 
 function drawStoreChart(code){
   const s = DATA.series[code];
-  const cm = state.tableMetric;
-  const labels=[],data=[];
+  const cm = state.drawerMetric;
+  const isS = cm==='spd';
+  const labels=[],threat=[],control=[];
   for(let w=state.wfrom; w<=state.wto; w++){
     labels.push(W[w]);
-    const v = cm==='spd' ? s.ns[w] : s.nb[w];
-    data.push(v);
+    if(isS){
+      threat.push((s.as[w]!=null && s.bs[w]!=null) ? (s.as[w]-s.bs[w]) : null);
+      control.push((s.cx[w]!=null && s.cs[w]!=null) ? (s.cx[w]-s.cs[w]) : null);
+    } else {
+      threat.push((s.ab[w]!=null && s.bb[w]!=null) ? (s.ab[w]-s.bb[w]) : null);
+      control.push((s.cy[w]!=null && s.cb[w]!=null) ? (s.cy[w]-s.cb[w]) : null);
+    }
   }
-  const color = cm==='spd'?'#4A7FB5':'#1B7A4A';
+  const unit = isS ? 'tr/ngày' : 'bill/ngày';
+  const cThreat = '#B42318', cControl = '#1B7A4A';
   setTimeout(()=>{
     const ctx = $('#d-chart');
     if(!ctx) return;
     new Chart(ctx,{
-      type:'line',data:{labels,datasets:[{label:cm==='spd'?'NET SPD (tr/ngày)':'NET BPD (bill/ngày)',data,borderColor:color,backgroundColor:color+'22',borderWidth:2,fill:true,tension:0.25,spanGaps:true,pointRadius:0}]},
-      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{maxTicksLimit:10,color:'#7C8592'},grid:{display:false}},y:{ticks:{color:'#7C8592'},grid:{color:'#E4E9EF'}}}}
+      type:'line',
+      data:{labels, datasets:[
+        {label:'Threat', data:threat, borderColor:cThreat, backgroundColor:cThreat+'22', borderWidth:2, pointRadius:0, fill:false, tension:0.25, spanGaps:true},
+        {label:'Control', data:control, borderColor:cControl, backgroundColor:cControl+'22', borderWidth:2, borderDash:[6,4], pointRadius:0, fill:false, tension:0.25, spanGaps:true}
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:true,labels:{usePointStyle:true,boxWidth:8,color:'#1A1F26',font:{weight:'600'}}},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.parsed.y==null?'—':c.parsed.y.toFixed(2)+' '+unit}`}}},scales:{x:{ticks:{maxTicksLimit:10,color:'#7C8592'},grid:{display:false}},y:{ticks:{color:'#7C8592'},grid:{color:'#E4E9EF'}}}}
     });
   },150);
 }
 
 function buildStoreTable(code){
   const s = DATA.series[code];
-  const cm = state.tableMetric;
+  const cm = state.drawerMetric;
   const isS = cm==='spd';
   let rows='';
   for(let w=0; w<53; w++){
@@ -710,6 +774,7 @@ function buildStoreTable(code){
     const netV = isS ? s.ns[w] : s.nb[w];
     const pctV = isS ? s.ps[w] : s.pb[w];
     const pctThreat = baseV && baseV!==0 ? ((actualV - baseV)/baseV*100) : null;
+    const pctCtrl = cBaseV && cBaseV!==0 ? ((cActualV - cBaseV)/cBaseV*100) : null;
     rows += `<tr>
       <td>${W[w]}</td>
       <td class="num">${fmtNum(baseV,1)}</td>
@@ -717,6 +782,7 @@ function buildStoreTable(code){
       <td class="num ${signCls(pctThreat)}">${fmtPct(pctThreat)}</td>
       <td class="num">${fmtNum(cBaseV,1)}</td>
       <td class="num">${fmtNum(cActualV,1)}</td>
+      <td class="num ${signCls(pctCtrl)}">${fmtPct(pctCtrl)}</td>
       <td class="num ${signCls(netV)}"><b>${fmt(netV)}</b></td>
       <td class="num ${signCls(pctV)}"><b>${fmtPct(pctV)}</b></td>
     </tr>`;
@@ -730,6 +796,7 @@ function buildStoreTable(code){
     <th class="num">%Imp Thr</th>
     <th class="num col-before">Ctrl Base ${ctrlUnit}</th>
     <th class="num col-after">Ctrl Actual ${ctrlUnit}</th>
+    <th class="num">%Imp Ctrl</th>
     <th class="num col-net">NET Imp ${ctrlUnit}</th>
     <th class="num col-net">NET %</th>
   </tr></thead><tbody>${rows}</tbody>`;
