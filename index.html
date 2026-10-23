@@ -753,7 +753,8 @@ function populateFilters(){
 const VIEWS = [
   ['province','Tỉnh'],
   ['gdv','GĐV / QLKV'],
-  ['threat','Threat']
+  ['threat','Threat'],
+  ['rules','📋 Rules']
 ];
 function renderTabs(){
   $('#vtabs').innerHTML = VIEWS.map(([k,l])=>`<button data-v="${k}" class="${state.view===k?'on':''}">${l}</button>`).join('');
@@ -772,6 +773,14 @@ function renderTabs(){
 /* ---------- render all ---------- */
 function renderAll(){
   renderTabs();
+  if(state.view==='rules'){ renderRules(); return; }
+  // Show elements hidden by rules tab
+  ['#kpis','.chart-wrap','.tbl-wrap','#meta-line'].forEach(s=>{
+    const el = document.querySelector(s); if(el) el.style.display='';
+  });
+  const rulesEl = document.getElementById('rules-section');
+  if(rulesEl) rulesEl.style.display = 'none';
+  
   const codes = filteredStores();
   $('#tbl-title').textContent = VIEWS.find(v=>v[0]===state.view)[1];
   renderKPI(codes);
@@ -779,6 +788,162 @@ function renderAll(){
   renderTable();
   const metricLabel = state.tableMetric==='spd'?'SPD (tr/ngày)':'BPD (bill/ngày)';
   $('#meta-line').innerHTML = `<span>${DATA.meta.n_stores} cửa hàng</span><span>${DATA.meta.generated}</span><span>Threat: ${state.threat==='all'?'Tất cả':state.threat}</span><span>Khoảng cách: ${state.dist==='all'?'Tất cả':state.dist}</span><span>Tuần: ${W[state.wfrom]}–${W[state.wto]}</span><span>Chỉ số: ${metricLabel}</span>`;
+}
+
+/* ---------- RULES TAB ---------- */
+function renderRules(){
+  // Ẩn các phần không liên quan
+  ['#kpis','.chart-wrap','.tbl-wrap','#meta-line'].forEach(s=>{
+    const el = document.querySelector(s); if(el) el.style.display='none';
+  });
+  $('#tbl-title').textContent = '📋 Phương pháp & Cách tính';
+  
+  const ruleHTML = `
+<div class="rules-wrap" style="max-width:900px;margin:20px auto;padding:0 20px;font-size:14px;line-height:1.8;color:var(--ink)">
+  
+  <div class="card" style="background:#fff;border-radius:10px;padding:24px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.06)">
+    <h3 style="color:var(--navy);margin-bottom:8px">📐 I. PHƯƠNG PHÁP</h3>
+    
+    <h4 style="color:var(--navy);margin:16px 0 6px">1. Mục tiêu</h4>
+    <p>Đo lường tác động của <b>đối thủ mới mở</b> (BHX / WCM / cả hai) lên doanh thu & bill các cửa hàng <b>WinMart+ Rural hiện hữu</b> trong bán kính 1km.</p>
+
+    <h4 style="color:var(--navy);margin:16px 0 6px">2. Dữ liệu đầu vào</h4>
+    <ul style="padding-left:20px">
+      <li><b>Check Sale 18/10/2026</b> — Doanh thu & bill theo ngày cho từng CH (MB + MTN)</li>
+      <li><b>LFL v8</b> — Danh sách 1.455 CH bị ảnh hưởng + 570 CH đối chứng + ngày mở đối thủ</li>
+      <li><b>Storelist LIVE</b> — Tỉnh / Huyện / GĐV / QLKV chuẩn cho từng mã CH (2.770 CH)</li>
+    </ul>
+
+    <h4 style="color:var(--navy);margin:16px 0 6px">3. Lọc dữ liệu</h4>
+    <ul style="padding-left:20px">
+      <li>Chỉ lấy CH <b>Rural</b> (nông thôn)</li>
+      <li>CH bị ảnh hưởng: có đối thủ trong bán kính <b>≤1km</b></li>
+      <li>Đối chiếu Tỉnh/Huyện với <b>Storelist</b> (phát hiện & sửa <b>591 sai lệch</b> so với LFL v8)</li>
+    </ul>
+
+    <h4 style="color:var(--navy);margin:16px 0 6px">4. Nhóm đối chứng (Control)</h4>
+    <ul style="padding-left:20px">
+      <li>Control = CH <b>không bị ảnh hưởng</b> bởi đối thủ nào</li>
+      <li>Match theo: <b>cùng Tỉnh</b>, ưu tiên <b>cùng Huyện</b> (nếu ≥3 CH control trong huyện)</li>
+      <li>Mỗi CH threat được gán nhóm control riêng — control được tính độc lập cho từng tuần</li>
+    </ul>
+  </div>
+
+  <div class="card" style="background:#fff;border-radius:10px;padding:24px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.06)">
+    <h3 style="color:var(--navy);margin-bottom:8px">🧮 II. CÁCH TÍNH</h3>
+
+    <h4 style="color:var(--navy);margin:16px 0 6px">1. Xác định tuần W0</h4>
+    <p>W0 = tuần chứa <b>ngày đối thủ khai trương</b> (parse từ cột "BHX mở mới" / "WCM mở mới"). Phân tích từ <b>W0 đến W52</b> (53 tuần).</p>
+
+    <h4 style="color:var(--navy);margin:16px 0 6px">2. Baseline (mốc tham chiếu)</h4>
+    <p><b>Baseline = trung bình 8 tuần trước khi đối thủ mở (W−8 → W−1)</b></p>
+    <ul style="padding-left:20px">
+      <li>Loại trừ các tuần có ngày lễ: <b>Tết Nguyên Đán, Giỗ Tổ, 30/4, 1/5, 2/9</b></li>
+      <li>Baseline được tính <b>riêng cho từng CH</b> (threat & control)</li>
+      <li>Ưu điểm: áp dụng cho cả CH mới (không cần data năm ngoái)</li>
+    </ul>
+
+    <h4 style="color:var(--navy);margin:16px 0 6px">3. Impact (tác động)</h4>
+    <div style="background:#f8f9fb;padding:12px 16px;border-radius:8px;margin:8px 0;font-family:monospace;font-size:13px">
+      <div style="margin-bottom:8px"><b>Impact Threat</b> = Actual<sub>Threat</sub> − Baseline<sub>Threat</sub></div>
+      <div style="margin-bottom:8px"><b>Impact Control</b> = Actual<sub>Control</sub> − Baseline<sub>Control</sub></div>
+      <div style="margin-bottom:8px"><b>NET Impact</b> = Impact<sub>Threat</sub> − Impact<sub>Control</sub></div>
+      <div style="margin-bottom:8px"><b>% Impact Threat</b> = (Actual<sub>Threat</sub> − Baseline<sub>Threat</sub>) / Baseline<sub>Threat</sub> × 100</div>
+      <div style="margin-bottom:8px"><b>% Impact Control</b> = (Actual<sub>Control</sub> − Baseline<sub>Control</sub>) / Baseline<sub>Control</sub> × 100</div>
+      <div><b>NET % Impact</b> = %Impact<sub>Threat</sub> − %Impact<sub>Control</sub></div>
+    </div>
+
+    <h4 style="color:var(--navy);margin:16px 0 6px">4. Đơn vị hiển thị</h4>
+    <ul style="padding-left:20px">
+      <li><b>SPD</b> (Sales Per Day) = Doanh thu tuần / 7 → <b>triệu đồng/ngày</b></li>
+      <li><b>BPD</b> (Bills Per Day) = Số bill tuần / 7 → <b>bill/ngày</b></li>
+      <li>Có thể toggle giữa SPD và BPD trên thanh công cụ</li>
+    </ul>
+  </div>
+
+  <div class="card" style="background:#fff;border-radius:10px;padding:24px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.06)">
+    <h3 style="color:var(--navy);margin-bottom:8px">📝 III. VÍ DỤ</h3>
+    
+    <h4 style="color:var(--navy);margin:16px 0 6px">CH WM+ NBH Thôn Văn Phong, Nho Quan — Đối thủ BHX mở 01/08/2026 (W0)</h4>
+    
+    <div style="overflow-x:auto">
+    <table style="width:100%;border-collapse:collapse;font-size:13px;margin:8px 0">
+      <thead>
+        <tr style="background:var(--navy);color:#fff">
+          <th style="padding:6px 10px;text-align:left">Chỉ số</th>
+          <th style="padding:6px 10px;text-align:right">Threat</th>
+          <th style="padding:6px 10px;text-align:right">Control</th>
+          <th style="padding:6px 10px;text-align:right">NET</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom:1px solid var(--rule)">
+          <td style="padding:6px 10px">Baseline SPD (W−8→W−1)</td>
+          <td style="padding:6px 10px;text-align:right">15.2 tr/ngày</td>
+          <td style="padding:6px 10px;text-align:right">14.8 tr/ngày</td>
+          <td style="padding:6px 10px;text-align:right">—</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--rule);background:#f8f9fb">
+          <td style="padding:6px 10px">Actual SPD (W0–W4)</td>
+          <td style="padding:6px 10px;text-align:right">12.1 tr/ngày</td>
+          <td style="padding:6px 10px;text-align:right">14.5 tr/ngày</td>
+          <td style="padding:6px 10px;text-align:right">—</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--rule)">
+          <td style="padding:6px 10px">Impact SPD</td>
+          <td style="padding:6px 10px;text-align:right;color:#d71920">−3.1 tr/ngày</td>
+          <td style="padding:6px 10px;text-align:right;color:#d71920">−0.3 tr/ngày</td>
+          <td style="padding:6px 10px;text-align:right;color:#d71920">−2.8 tr/ngày</td>
+        </tr>
+        <tr style="background:#f8f9fb">
+          <td style="padding:6px 10px"><b>% Impact</b></td>
+          <td style="padding:6px 10px;text-align:right;color:#d71920"><b>−20.4%</b></td>
+          <td style="padding:6px 10px;text-align:right;color:#d71920"><b>−2.0%</b></td>
+          <td style="padding:6px 10px;text-align:right;color:#d71920"><b>−18.4%</b></td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+    
+    <div style="background:#f0fdf4;padding:12px 16px;border-radius:8px;margin-top:12px;border-left:4px solid #16a34a">
+      <b>💡 Cách đọc:</b> BHX mở làm CH mất <b>3.1 tr/ngày</b> (−20.4%) so với baseline. Nhưng control cũng giảm nhẹ (−2.0%) do yếu tố mùa vụ/thị trường. <b>NET Impact thực sự của BHX = −18.4 điểm %</b> — tức CH bị ảnh hưởng nặng hơn control 18.4 điểm phần trăm.
+    </div>
+
+    <h4 style="color:var(--navy);margin:20px 0 6px">🔍 Tra cứu thực tế</h4>
+    <p>Vào tab <b>Tỉnh</b> hoặc <b>GĐV/QLKV</b>, chọn CH cụ thể để xem số liệu thật từ dữ liệu. Mỗi CH có thể có kết quả khác nhau tùy vào vị trí, loại đối thủ, và khoảng cách.</p>
+  </div>
+
+  <div class="card" style="background:#fff;border-radius:10px;padding:24px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.06)">
+    <h3 style="color:var(--navy);margin-bottom:8px">🔄 IV. CẬP NHẬT</h3>
+    <p>Khi có dữ liệu mới (Check Sale mới, Storelist cập nhật):</p>
+    <ol style="padding-left:20px">
+      <li>Thay file Check Sale đầu vào → chạy pipeline Python <code>gen_bhx_lfl_w0w52_w8baseline.py</code></li>
+      <li>File LFL v8 cập nhật từ team Tài chính → map lại đối thủ + ngày mở</li>
+      <li>Storelist tự động fetch từ Google Sheets LIVE khi load trang</li>
+      <li>Build lại Excel + Dashboard → deploy qua GitHub Pages</li>
+    </ol>
+    <p style="margin-top:8px;color:var(--ink-2);font-size:13px">📅 Phiên bản hiện tại: <b>${DATA.meta.generated || '23/10/2026'}</b> · Data: Check Sale 18/10/2026 · Storelist LIVE</p>
+  </div>
+
+</div>`;
+  
+  // Thêm section rules nếu chưa có
+  let rulesEl = document.getElementById('rules-section');
+  if(!rulesEl){
+    rulesEl = document.createElement('div');
+    rulesEl.id = 'rules-section';
+    const tblWrap = document.querySelector('.tbl-wrap');
+    if(tblWrap) tblWrap.parentNode.insertBefore(rulesEl, tblWrap);
+  }
+  rulesEl.innerHTML = ruleHTML;
+  rulesEl.style.display = 'block';
+  
+  // Reset filters display when coming back from rules
+  const orig = document.querySelector('#orig-view');
+  if(!orig){
+    const el = document.createElement('div'); el.id='orig-view'; el.style.display='none';
+    document.body.appendChild(el);
+  }
 }
 
 /* ---------- events ---------- */
