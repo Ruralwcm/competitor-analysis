@@ -262,7 +262,8 @@ async function fetchStorelist(){
     }
     state.storelistReady = true;
     $('#loading').style.display = 'none';
-    console.log('Storelist LIVE loaded, updated GĐV/QLKV');
+    console.log('Storelist LIVE loaded, updated GĐV/QLKV for', Object.keys(DATA.stores).length, 'stores');
+    renderAll(); // Re-render with updated org data
   } catch(e){
     console.warn('Storelist fetch failed, using embedded data:', e.message);
     state.storelistReady = true;
