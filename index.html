@@ -203,7 +203,7 @@
 
   <header class="mast">
     <div class="kicker">Winmart+ Miền Bắc · LFL W0–W52 · W8 baseline · 282 CH · 13 Tỉnh</div>
-    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.5 · 23/10/2026</span></h1>
+    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.6 · 23/10/2026</span></h1>
     <p class="sub">Phân tích tác động (impact) của đối thủ BHX / WCM / BHX+WCM — Before/After &amp; Control breakdown · Số liệu SPD &amp; BPD</p>
     <div class="meta" id="meta-line"></div>
   </header>
@@ -1177,10 +1177,18 @@ function bindEvents(){
 }
 
 /* ---------- Init ---------- */
-populateFilters();
-bindEvents();
-renderAll();
-fetchStorelist();
+(function(){
+  var _ld = document.getElementById('loading');
+  try {
+    populateFilters();
+    bindEvents();
+    renderAll();
+  } catch(e) {
+    if(_ld){ _ld.style.display='flex'; _ld.innerHTML='<span>⚠️ Có lỗi hiển thị, vui lòng tải lại trang (Ctrl+F5).</span>'; }
+    if(window.console && console.error) console.error(e);
+  }
+  fetchStorelist();
+})();
 
 
 </body>
