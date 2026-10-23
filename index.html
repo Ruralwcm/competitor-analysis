@@ -155,9 +155,10 @@
   .drawer .d-head h2{font-size:17px;font-weight:700;color:var(--navy);margin:0 0 4px}
   .drawer .d-head .close{margin-left:auto;background:none;border:0;font-size:24px;cursor:pointer;color:var(--ink-3);line-height:1}
   .drawer .d-body{padding:18px 20px;overflow-y:auto;flex:1}
-  .drawer .d-info{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;font-size:13px;margin-bottom:16px}
+  .drawer .d-info{display:flex;flex-direction:column;gap:6px;font-size:13px;margin-bottom:16px}
   .drawer .d-info .k{color:var(--ink-3);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.03em}
   .drawer .d-info .v{color:var(--ink)}
+  .drawer .d-info .v{font-weight:600}
   .drawer .d-box{border:1px solid var(--rule);border-radius:10px;padding:12px 14px;margin-bottom:14px}
   .drawer .d-box h3{font-size:13px;font-weight:700;color:var(--navy);margin:0 0 8px}
   .drawer .d-seg{display:flex;gap:4px;align-items:center}
@@ -211,7 +212,7 @@
 <div class="page">
 
   <header class="mast">
-    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.22 · 23/10/2026</span></h1>
+    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.23 · 23/10/2026</span></h1>
     <p class="sub">BHX / WCM / BHX+WCM · LFL W0–W52 · 282 CH</p>
   </header>
 
@@ -282,12 +283,7 @@
   <div id="rules-section" style="display:none"></div>
 
   <div class="foot">
-    Dữ liệu: <b>BHX_LFL_W0W52_W8baseline_Storelist.xlsx</b> (sheet «SPD &amp; Bill Per Day») · Storelist nhúng sẵn trong file<br>
-    <b>Before (Baseline):</b> Số baseline của CH threat &amp; Control trước khi mở đối thủ · <b>After (Actual):</b> Số thực tế sau khi mở · 
-    <b>%Impact Threat</b> = (Actual − Baseline) / Baseline × 100 · 
-    <b>NET Impact</b> = Impact_Threat − Impact_Control · 
-    <b>NET % Impact</b> = %Impact_Threat − %Impact_Control<br>
-    <span class="num neg">Âm = thiệt hại (mất doanh thu/đơn so với control)</span> · <span class="num pos">Dương = tăng trưởng</span>
+    <b>Before</b> = baseline · <b>After</b> = thực tế · <b>%Impact</b> = (Actual−Baseline)÷Baseline · <b>NET</b> = Threat−Control · <b>NET%</b> = %Threat−%Control · <span class="num neg">Âm = thiệt hại</span> · <span class="num pos">Dương = tăng trưởng</span>
   </div>
 </div>
 
@@ -1040,17 +1036,12 @@ function openDrawer(code){
     </div>
     <div class="d-body">
       <div class="d-info">
-        <div><div class="k">Tỉnh / TP</div><div class="v">${s.p}</div></div>
-        <div><div class="k">Huyện</div><div class="v">${s.h||'—'}</div></div>
-        <div><div class="k">Threat</div><div class="v"><span class="tag ${thTag(s.t)}">${s.t}</span></div></div>
-        <div><div class="k">Khoảng cách</div><div class="v">${s.d}</div></div>
-        <div><div class="k">W0 (mở)</div><div class="v">${s.w0}</div></div>
-        <div><div class="k">GĐV</div><div class="v">${s.g}</div></div>
-        <div><div class="k">QLKV</div><div class="v">${s.q}</div></div>
+        <div class="d-line"><span class="k">Tỉnh</span> <span class="v">${s.p}</span> · <span class="k">Huyện</span> <span class="v">${s.h||'—'}</span> · <span class="k">GĐV</span> <span class="v">${s.g}</span> · <span class="k">QLKV</span> <span class="v">${s.q}</span></div>
+        <div class="d-line"><span class="k">Threat</span> <span class="v"><span class="tag ${thTag(s.t)}">${s.t}</span></span> · <span class="k">Khoảng cách</span> <span class="v">${s.d}</span> · <span class="k">Ngày affect</span> <span class="v">${s.w0}</span></div>
       </div>
       <div class="d-box">
         <h3>KPI Tổng hợp (${W[state.wfrom]}–${W[state.wto]})</h3>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px;margin-bottom:8px">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;font-size:12px;margin-bottom:8px">
           <div style="background:var(--band);padding:6px 10px;border-radius:6px">
             <div style="font-size:10px;color:var(--ink-3);font-weight:700;text-transform:uppercase">Baseline ${isS?'SPD (tr/ngày)':'BPD (bill/ngày)'}</div>
             <div style="font-weight:700;font-size:16px">${fmtNum(isS?agg.bs:agg.bb,1)}</div>
