@@ -135,14 +135,14 @@
   tr.store-row:hover td{background:var(--band)}
   td .grp-label{font-weight:700;color:var(--navy)}
   /* Threat-by-Week pivot */
-  table.tw-tbl{font-size:11px;table-layout:fixed;width:830px}
-  table.tw-tbl thead th{position:sticky;top:0;z-index:2;background:var(--band);font-size:9.5px;padding:5px 3px}
-  table.tw-tbl th.tw-r,table.tw-tbl td.tw-r{position:sticky;left:0;background:var(--band);z-index:1;font-weight:700;text-align:left;white-space:nowrap;padding:5px 8px;width:200px;box-sizing:border-box}
-  table.tw-tbl th.tw-w{width:38px}
-  table.tw-tbl th.tw-ch,table.tw-tbl td.tw-ch{width:46px}
+  table.tw-tbl{font-size:10px;table-layout:fixed;width:100%}
+  table.tw-tbl thead th{position:sticky;top:0;z-index:2;background:var(--band);font-size:9px;padding:4px 2px}
+  table.tw-tbl th.tw-r,table.tw-tbl td.tw-r{position:sticky;left:0;background:var(--band);z-index:1;font-weight:700;text-align:left;white-space:nowrap;padding:4px 8px;box-sizing:border-box}
+  table.tw-tbl th.tw-w{width:5.2%}
+  table.tw-tbl th.tw-ch,table.tw-tbl td.tw-ch{width:4.5%}
   table.tw-tbl tr.tw-row{cursor:pointer}
   table.tw-tbl tr.tw-sub td.tw-r{background:#F6F9FC}
-  table.tw-tbl tbody td.num{padding:5px 3px;text-align:center}
+  table.tw-tbl tbody td.num{padding:4px 2px;text-align:center}
 
   .gdv-toggle{display:none;gap:4px}
   .gdv-toggle button{font:inherit;font-size:12px;font-weight:600;padding:4px 10px;border-radius:14px;border:1px solid var(--rule);background:#fff;color:var(--ink-2);cursor:pointer}
@@ -212,7 +212,7 @@
 <div class="page">
 
   <header class="mast">
-    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.24 · 23/10/2026</span></h1>
+    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.25 · 23/10/2026</span></h1>
     <p class="sub">BHX / WCM / BHX+WCM · LFL W0–W52 · 282 CH</p>
   </header>
 
@@ -624,9 +624,9 @@ function renderThreatWeekTable(){
     return cells;
   };
 
-  let colg = '<colgroup><col style="width:200px"><col style="width:46px">';
-  for(const w of weeks) colg += '<col style="width:38px">';
-  colg += '<col style="width:52px"></colgroup>';
+  let colg = '<colgroup><col style="width:16%"><col style="width:4.5%">';
+  for(const w of weeks) colg += '<col style="width:5.2%">';
+  colg += '<col style="width:5.5%"></colgroup>';
 
   let head = colg + '<thead><tr><th class="tw-r">Threat</th><th class="num tw-ch">Số CH</th>';
   for(const w of weeks) head += `<th class="num tw-w">${W[w]}</th>`;
