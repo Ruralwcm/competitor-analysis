@@ -133,6 +133,12 @@
   tr.store-row td{background:#FBFCFE}
   tr.store-row:hover td{background:var(--band)}
   td .grp-label{font-weight:700;color:var(--navy)}
+  /* Threat-by-Week pivot */
+  table.tw-tbl{font-size:11px;table-layout:fixed}
+  table.tw-tbl thead th{position:sticky;top:0;z-index:2;background:var(--band);font-size:9.5px;padding:5px 3px}
+  table.tw-tbl th.tw-r,table.tw-tbl td.tw-r{position:sticky;left:0;background:var(--band);z-index:1;font-weight:700;text-align:left;white-space:nowrap;padding:5px 8px;min-width:92px}
+  table.tw-tbl th.tw-w{min-width:34px}
+  table.tw-tbl tbody td.num{padding:5px 3px;text-align:center}
 
   .gdv-toggle{display:none;gap:4px}
   .gdv-toggle button{font:inherit;font-size:12px;font-weight:600;padding:4px 10px;border-radius:14px;border:1px solid var(--rule);background:#fff;color:var(--ink-2);cursor:pointer}
@@ -202,7 +208,7 @@
 
   <header class="mast">
     <div class="kicker">Winmart+ Miền Bắc · LFL W0–W52 · W8 baseline · 282 CH · 13 Tỉnh</div>
-    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.9 · 23/10/2026</span></h1>
+    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.10 · 23/10/2026</span></h1>
     <p class="sub">Phân tích tác động (impact) của đối thủ BHX / WCM / BHX+WCM — Before/After &amp; Control breakdown · Số liệu SPD &amp; BPD</p>
     <div class="meta" id="meta-line"></div>
   </header>
@@ -261,9 +267,13 @@
       </div>
     </div>
 
-    <!-- Cột phải: Chart NET Impact -->
+    <!-- Cột phải: Threat by Week + Chart NET Impact -->
     <div class="col-r" id="col-right">
-      <div class="panel" id="cell-chart" style="flex:1;min-height:500px">
+      <div class="panel" id="cell-threat-week" style="flex:0 0 auto">
+        <div class="panel-title">📊 Threat by Week — %NET Impact</div>
+        <div class="tbl-scroll" style="max-height:300px"><table id="tw-tbl" class="tw-tbl"></table></div>
+      </div>
+      <div class="panel" id="cell-chart" style="flex:1;min-height:400px">
         <div class="panel-title" id="chart-title">NET Impact — Threat by Week (W0–W52)</div>
         <div class="canvas-box"><canvas id="chart"></canvas></div>
       </div>
@@ -537,6 +547,36 @@ function renderKPISection(codes){
 
 /* ---------- line chart (bottom-right) ---------- */
 let chart = null;
+/* ---------- Threat by Week pivot table (NET % impact) ---------- */
+function renderThreatWeekTable(){
+  const m = state.tableMetric;
+  const field = m==='spd' ? 'ps' : 'pb';
+  const threats = ['BHX','WCM','BHX + WCM'];
+  const codes = filteredStores();
+  const byThreat = {};
+  for(const c of codes){ const t = DATA.stores[c].t || ''; (byThreat[t] = byThreat[t] || []).push(c); }
+
+  let head = '<thead><tr><th class="tw-r">Threat</th>';
+  for(let w=0; w<W.length; w++) head += `<th class="num tw-w">${W[w]}</th>`;
+  head += '</tr></thead>';
+
+  let body = '<tbody>';
+  for(const t of threats){
+    const list = byThreat[t] || [];
+    let cells = '';
+    for(let w=0; w<W.length; w++){
+      const vals = [];
+      for(const c of list){ const s = DATA.series[c]; if(s && s[field] && s[field][w]!=null) vals.push(s[field][w]); }
+      const v = mean(vals);
+      cells += `<td class="num ${signCls(v)}">${v==null?'':fmtPct(v)}</td>`;
+    }
+    body += `<tr><td class="tw-r"><span class="tag ${thTag(t)}">${t}</span></td>${cells}</tr>`;
+  }
+  body += '</tbody>';
+
+  $('#tw-tbl').innerHTML = head + body;
+}
+
 function renderChart(codes){
   if(typeof Chart==='undefined'){ const el=$('#chart-title'); if(el) el.textContent='⚠️ Biểu đồ không tải được, vui lòng tải lại trang'; return; }
   /* v4.2: Single shared metric toggle; chart always follows state.tableMetric */
@@ -1063,6 +1103,7 @@ function renderAll(){
   renderTable();
   renderThreatDetailTable();
   renderChart(codes);
+  renderThreatWeekTable();
 
   const metricLabel = state.tableMetric==='spd'?'SPD (tr/ngày)':'BPD (bill/ngày)';
   $('#meta-line').innerHTML = `<span>${DATA.meta.n_stores} cửa hàng</span><span>${DATA.meta.generated}</span><span>Threat: ${state.threat==='all'?'Tất cả':state.threat}</span><span>Khoảng cách: ${state.dist==='all'?'Tất cả':state.dist}</span><span>Tuần: ${W[state.wfrom]}–${W[state.wto]}</span><span>Chỉ số: ${metricLabel}</span>`;
