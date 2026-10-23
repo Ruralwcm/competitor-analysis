@@ -212,7 +212,7 @@
 <div class="page">
 
   <header class="mast">
-    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.23 · 23/10/2026</span></h1>
+    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.24 · 23/10/2026</span></h1>
     <p class="sub">BHX / WCM / BHX+WCM · LFL W0–W52 · 282 CH</p>
   </header>
 
@@ -248,7 +248,7 @@
       <!-- Trên: Section 1 — Bảng theo Tỉnh (không drill tới CH) -->
       <div class="panel has-scroll" id="cell-stores">
         <div class="t-head">
-          <h2 id="tbl-title">🏛️ Theo Tỉnh → Huyện</h2>
+          <h2 id="tbl-title">🗺️ Theo Miền → Tỉnh → Huyện</h2>
           <span class="cnt" id="tbl-cnt"></span>
           <div class="right"><input id="tbl-search" type="search" placeholder="Tìm kiếm…" autocomplete="off"></div>
         </div>
@@ -333,6 +333,14 @@ const KPI_HEADERS = [
   ['col-before','Ctrl<br>Base'], ['col-after','Ctrl<br>Actual'], ['col-impact','Ctrl%'],
   ['col-impact','NET<br>Imp'], ['col-impact','NET%']
 ];
+const MIEN_MAP = {
+  'Hà Nội':'Đồng bằng sông Hồng', 'Hải Phòng':'Đồng bằng sông Hồng', 'Bắc Ninh':'Đồng bằng sông Hồng',
+  'Hưng Yên':'Đồng bằng sông Hồng', 'Ninh Bình':'Đồng bằng sông Hồng',
+  'Quảng Ninh':'Đông Bắc', 'Lạng Sơn':'Đông Bắc', 'Thái Nguyên':'Đông Bắc',
+  'Tuyên Quang':'Đông Bắc', 'Phú Thọ':'Đông Bắc',
+  'Lào Cai':'Tây Bắc', 'Sơn La':'Tây Bắc', 'Điện Biên':'Tây Bắc'
+};
+const mienOf = p => MIEN_MAP[p] || 'Khác';
 function sortNodeList(list){
   if(!state.sortKey) return list;
   const dir = state.sortDir;
@@ -479,34 +487,49 @@ function buildTree(){
 }
 
 function buildProvinceTree(codes){
-  // Section 1: Province → District only — NO store drill-down
-  const byProv = {};
+  // Section 1: Miền → Tỉnh → Huyện tree
+  const byMien = {};
   for(const c of codes){
     const s = DATA.stores[c];
+    const mi = mienOf(s.p);
     const p = s.p || '(chưa rõ)';
     const h = s.h || '(chưa rõ)';
     const t = s.t || '';
-    if(!byProv[p]) byProv[p] = {};
-    if(!byProv[p][h]) byProv[p][h] = { codes:[], wcm:0, bhx:0, both:0 };
-    byProv[p][h].codes.push(c);
-    if(t.includes('WCM') && t.includes('BHX')) byProv[p][h].both++;
-    else if(t.includes('WCM')) byProv[p][h].wcm++;
-    else if(t.includes('BHX')) byProv[p][h].bhx++;
+    byMien[mi] = byMien[mi] || {};
+    byMien[mi][p] = byMien[mi][p] || {};
+    if(!byMien[mi][p][h]) byMien[mi][p][h] = { codes:[], wcm:0, bhx:0, both:0 };
+    byMien[mi][p][h].codes.push(c);
+    if(t.includes('WCM') && t.includes('BHX')) byMien[mi][p][h].both++;
+    else if(t.includes('WCM')) byMien[mi][p][h].wcm++;
+    else if(t.includes('BHX')) byMien[mi][p][h].bhx++;
   }
-  const provNodes = Object.keys(byProv).map(p => {
-    const districts = Object.keys(byProv[p]).map(h => {
-      const d = byProv[p][h];
-      return { kind:'district', key:'h:'+p+'|'+h, label:h, province:p, agg: aggregateCodes(d.codes), wcm: d.wcm, bhx: d.bhx, both: d.both };
+  const bucketAgg = (buckets) => {
+    const allCodes = buckets.flatMap(x=>x.codes);
+    return {
+      agg: aggregateCodes(allCodes),
+      wcm: buckets.reduce((s,x)=>s+x.wcm,0),
+      bhx: buckets.reduce((s,x)=>s+x.bhx,0),
+      both: buckets.reduce((s,x)=>s+x.both,0)
+    };
+  };
+  const mienNodes = Object.keys(byMien).map(mi => {
+    const byProv = byMien[mi];
+    const provNodes = Object.keys(byProv).map(p => {
+      const districts = Object.keys(byProv[p]).map(h => {
+        const d = byProv[p][h];
+        return { kind:'district', key:'h:'+p+'|'+h, label:h, province:p, agg: aggregateCodes(d.codes), wcm: d.wcm, bhx: d.bhx, both: d.both };
+      });
+      districts.sort(byNs);
+      const pb = bucketAgg(Object.values(byProv[p]));
+      return { kind:'province', key:'p:'+p, label:p, agg: pb.agg, wcm: pb.wcm, bhx: pb.bhx, both: pb.both, children: districts };
     });
-    districts.sort(byNs);
-    const allCodes = Object.values(byProv[p]).map(x=>x.codes).flat();
-    const allWcm = Object.values(byProv[p]).reduce((s,x)=>s+x.wcm,0);
-    const allBhx = Object.values(byProv[p]).reduce((s,x)=>s+x.bhx,0);
-    const allBoth = Object.values(byProv[p]).reduce((s,x)=>s+x.both,0);
-    return { kind:'province', key:'p:'+p, label:p, agg: aggregateCodes(allCodes), wcm: allWcm, bhx: allBhx, both: allBoth, children: districts };
+    provNodes.sort(byNs);
+    const allBuckets = Object.values(byProv).flatMap(p => Object.values(p));
+    const mb = bucketAgg(allBuckets);
+    return { kind:'mien', key:'mi:'+mi, label:mi, agg: mb.agg, wcm: mb.wcm, bhx: mb.bhx, both: mb.both, children: provNodes };
   });
-  provNodes.sort(byNs);
-  return provNodes;
+  mienNodes.sort(byNs);
+  return mienNodes;
 }
 
 function buildOrgTree(codes){
@@ -732,33 +755,49 @@ function renderTable(){
   let count = 0;
 
   if(isProv){
-    // Province → District tree with threat counts
+    // Miền → Tỉnh → Huyện tree with threat counts
     const walk = (list, depth) => {
       for(const node of list){
         if(!nodeMatches(node)) continue;
         count++;
         const open = expanded.has(node.key);
         const isSel = selectedProvince===node.key;
-        const indent = `<span style="display:inline-block;width:${depth*20}px"></span>`;
+        const indent = `<span style="display:inline-block;width:${depth*18}px"></span>`;
         const caret = `<span class="tree-caret ${open?'open':''}">▶</span>`;
-        body.push(`<tr class="prov-row clickable" data-key="${node.key}" style="${isSel?'background:#E6EDF6;font-weight:700':''}">
+        body.push(`<tr class="mien-row clickable" data-key="${node.key}" style="${isSel?'background:#E6EDF6;font-weight:700':''}">
     <td>${indent}${caret}<span class="grp-label">${node.label}</span></td>
     <td class="num">${node.agg.n}</td>
     <td class="num">${node.wcm||0}</td><td class="num">${node.bhx||0}</td><td class="num">${node.both||0}</td>
     ${kpiCells(node.agg, m)}
   </tr>`);
         if(open && node.children){
-          for(const d of node.children){
-            if(!nodeMatches(d)) continue;
+          for(const p of node.children){
+            if(!nodeMatches(p)) continue;
             count++;
-            const dSel = selectedDistrict===d.key;
-            const dIndent = `<span style="display:inline-block;width:${(depth+1)*20+18}px"></span>`;
-            body.push(`<tr class="dist-row clickable" data-key="${d.key}" style="${dSel?'background:#E6EDF6;font-weight:700':''}">
+            const pOpen = expanded.has(p.key);
+            const pSel = selectedProvince===p.key;
+            const pIndent = `<span style="display:inline-block;width:${(depth+1)*18}px"></span>`;
+            const pCaret = `<span class="tree-caret ${pOpen?'open':''}">▶</span>`;
+            body.push(`<tr class="prov-row clickable" data-key="${p.key}" style="${pSel?'background:#E6EDF6;font-weight:700':''}">
+    <td>${pIndent}${pCaret}<span class="grp-label">${p.label}</span></td>
+    <td class="num">${p.agg.n}</td>
+    <td class="num">${p.wcm||0}</td><td class="num">${p.bhx||0}</td><td class="num">${p.both||0}</td>
+    ${kpiCells(p.agg, m)}
+  </tr>`);
+            if(pOpen && p.children){
+              for(const d of p.children){
+                if(!nodeMatches(d)) continue;
+                count++;
+                const dSel = selectedDistrict===d.key;
+                const dIndent = `<span style="display:inline-block;width:${(depth+2)*18+16}px"></span>`;
+                body.push(`<tr class="dist-row clickable" data-key="${d.key}" style="${dSel?'background:#E6EDF6;font-weight:700':''}">
     <td>${dIndent}<span class="grp-label">${d.label}</span></td>
     <td class="num">${d.agg.n}</td>
     <td class="num">${d.wcm||0}</td><td class="num">${d.bhx||0}</td><td class="num">${d.both||0}</td>
     ${kpiCells(d.agg, m)}
   </tr>`);
+              }
+            }
           }
         }
       }
@@ -771,12 +810,31 @@ function renderTable(){
     <col style="width:7%"><col style="width:7%"><col style="width:6.5%">
     <col style="width:7%"><col style="width:7%"><col style="width:6.5%"><col style="width:7.5%"><col style="width:7.5%">
   </colgroup><thead><tr>
-    <th>Tỉnh</th><th class="num">SL CH</th>
+    <th>Miền</th><th class="num">SL CH</th>
     <th class="num">WCM</th><th class="num">BHX</th><th class="num">BHX+<br>WCM</th>
     ${kpiHead}
   </tr></thead>`;
     $('#tbl').innerHTML = head + `<tbody>${body.join('')}</tbody>`;
 
+    // Miền click → toggle expand
+    $('#tbl').querySelectorAll('tr.mien-row').forEach(tr=>{
+      tr.addEventListener('click', (e)=>{
+        if(e.target.closest('.tree-caret')) return;
+        const k = tr.dataset.key;
+        if(expanded.has(k)) expanded.delete(k); else expanded.add(k);
+        renderTable();
+        renderThreatDetailTable();
+      });
+    });
+    $('#tbl').querySelectorAll('tr.mien-row .tree-caret').forEach(ct=>{
+      ct.addEventListener('click', (ev)=>{
+        ev.stopPropagation();
+        const k = ct.closest('tr').dataset.key;
+        if(expanded.has(k)) expanded.delete(k); else expanded.add(k);
+        renderTable();
+        renderThreatDetailTable();
+      });
+    });
     // Province click → toggle expand + select
     $('#tbl').querySelectorAll('tr.prov-row').forEach(tr=>{
       tr.addEventListener('click', (e)=>{
@@ -788,7 +846,6 @@ function renderTable(){
         renderAll();
       });
     });
-    // Caret click → toggle expand only
     $('#tbl').querySelectorAll('tr.prov-row .tree-caret').forEach(ct=>{
       ct.addEventListener('click', (ev)=>{
         ev.stopPropagation();
@@ -921,7 +978,11 @@ function renderThreatDetailTable(){
 
   // Further filter by selection from Section 1
   if(selectedProvince){
-    if(selectedProvince.startsWith('p:')){
+    if(selectedProvince.startsWith('mi:')){
+      // Miền view: filter by miền
+      const mienKey = selectedProvince.replace('mi:','');
+      codes = codes.filter(c => mienOf(DATA.stores[c].p) === mienKey);
+    } else if(selectedProvince.startsWith('p:')){
       // Province view: filter by province
       const provKey = selectedProvince.replace('p:','');
       codes = codes.filter(c => (DATA.stores[c].p||'') === provKey);
@@ -1186,7 +1247,7 @@ function populateFilters(){
 
 /* ---------- View tabs ---------- */
 const VIEWS = [
-  ['province','Tỉnh'],
+  ['province','Miền'],
   ['gdv','GĐV / QLKV'],
   ['threat','Threat'],
   ['rules','📋 Rules']
@@ -1207,7 +1268,7 @@ function renderAll(){
   if(rulesEl) rulesEl.style.display = 'none';
 
   const codes = filteredStores();
-  const sec1Title = state.view==='province' ? '🏛️ Theo Tỉnh → Huyện' : (state.view==='threat' ? '⚡ Theo Threat' : '👥 Theo GĐV → QLKV');
+  const sec1Title = state.view==='province' ? '🗺️ Theo Miền → Tỉnh → Huyện' : (state.view==='threat' ? '⚡ Theo Threat' : '👥 Theo GĐV → QLKV');
   $('#tbl-title').textContent = sec1Title;
 
   renderKPISection(codes);
