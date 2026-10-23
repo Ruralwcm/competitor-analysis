@@ -212,7 +212,7 @@
 <div class="page">
 
   <header class="mast">
-    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.27 · 23/10/2026</span></h1>
+    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.28 · 23/10/2026</span></h1>
     <p class="sub">BHX / WCM / BHX+WCM · LFL W0–W52 · 282 CH</p>
   </header>
 
@@ -371,6 +371,34 @@ function filteredStores(){
     out.push(code);
   }
   return out;
+}
+
+/* Filter by global filters + Section 1 selection (Miền/Tỉnh/Huyện/GĐV/Threat) */
+function selectedCodes(){
+  let codes = filteredStores();
+  if(selectedProvince){
+    if(selectedProvince.startsWith('mi:')){
+      const mienKey = selectedProvince.replace('mi:','');
+      codes = codes.filter(c => mienOf(DATA.stores[c].p) === mienKey);
+    } else if(selectedProvince.startsWith('p:')){
+      const provKey = selectedProvince.replace('p:','');
+      codes = codes.filter(c => (DATA.stores[c].p||'') === provKey);
+    } else if(selectedProvince.startsWith('thr:')){
+      const thrKey = selectedProvince.replace('thr:','');
+      codes = codes.filter(c => (DATA.stores[c].t||'').includes(thrKey));
+    } else if(selectedProvince.startsWith('g:') || selectedProvince.startsWith('q:')){
+      const isGdv = selectedProvince.startsWith('g:');
+      const label = selectedProvince.substring(2);
+      codes = codes.filter(c => isGdv ? (DATA.stores[c].g||'')===label : (DATA.stores[c].q||'')===label);
+    }
+  }
+  if(selectedDistrict){
+    const parts = selectedDistrict.replace('h:','').split('|');
+    const prov = parts[0];
+    const huyen = parts.slice(1).join('|');
+    codes = codes.filter(c => (DATA.stores[c].p||'') === prov && (DATA.stores[c].h||'') === huyen);
+  }
+  return codes;
 }
 
 /* ---------- store-level aggregate ---------- */
@@ -833,8 +861,9 @@ function renderTable(){
         if(e.target.closest('.tree-caret')) return;
         const k = tr.dataset.key;
         if(expanded.has(k)) expanded.delete(k); else expanded.add(k);
-        renderTable();
-        renderThreatDetailTable();
+        if(selectedProvince===k){ selectedProvince = null; selectedDistrict = null; }
+        else { selectedProvince = k; selectedDistrict = null; }
+        renderAll();
       });
     });
     $('#tbl').querySelectorAll('tr.mien-row .tree-caret').forEach(ct=>{
@@ -846,13 +875,14 @@ function renderTable(){
         renderThreatDetailTable();
       });
     });
-    // Province click → toggle expand + select
+    // Province click → toggle expand + toggle select (bấm lần nữa = bỏ chọn)
     $('#tbl').querySelectorAll('tr.prov-row').forEach(tr=>{
       tr.addEventListener('click', (e)=>{
         if(e.target.closest('.tree-caret')) return;
         const k = tr.dataset.key;
         if(expanded.has(k)) expanded.delete(k); else expanded.add(k);
-        selectedProvince = k;
+        if(selectedProvince===k){ selectedProvince = null; }
+        else { selectedProvince = k; }
         selectedDistrict = null;
         renderAll();
       });
@@ -866,10 +896,12 @@ function renderTable(){
         renderThreatDetailTable();
       });
     });
-    // District click → select
+    // District click → toggle select (bấm lần nữa = bỏ chọn)
     $('#tbl').querySelectorAll('tr.dist-row').forEach(tr=>{
       tr.addEventListener('click', ()=>{
-        selectedDistrict = tr.dataset.key;
+        const k = tr.dataset.key;
+        if(selectedDistrict===k) selectedDistrict = null;
+        else selectedDistrict = k;
         renderAll();
       });
     });
@@ -925,8 +957,10 @@ function renderTable(){
         const k = tr.dataset.key;
         if(k.startsWith('g:')){
           if(expanded.has(k)) expanded.delete(k); else expanded.add(k);
-          selectedProvince = k; selectedDistrict = null;
         }
+        if(selectedProvince===k){ selectedProvince = null; }
+        else { selectedProvince = k; }
+        selectedDistrict = null;
         renderAll();
       });
     });
@@ -963,10 +997,12 @@ function renderTable(){
   </tr></thead>`;
     $('#tbl').innerHTML = head + `<tbody>${body.join('')}</tbody>`;
 
-    // Group click → select
+    // Group click → toggle select (bấm lần nữa = bỏ chọn)
     $('#tbl').querySelectorAll('tr.group-row').forEach(tr=>{
       tr.addEventListener('click', ()=>{
-        selectedProvince = tr.dataset.key;
+        const k = tr.dataset.key;
+        if(selectedProvince===k){ selectedProvince = null; }
+        else { selectedProvince = k; }
         selectedDistrict = null;
         renderAll();
       });
@@ -988,38 +1024,8 @@ function renderTable(){
 
 /* ---------- Section 2 (bottom-left): Store list filtered by Section 1 selection ---------- */
 function renderThreatDetailTable(){
-  // Get base filtered stores
-  let codes = filteredStores();
-
-  // Further filter by selection from Section 1
-  if(selectedProvince){
-    if(selectedProvince.startsWith('mi:')){
-      // Miền view: filter by miền
-      const mienKey = selectedProvince.replace('mi:','');
-      codes = codes.filter(c => mienOf(DATA.stores[c].p) === mienKey);
-    } else if(selectedProvince.startsWith('p:')){
-      // Province view: filter by province
-      const provKey = selectedProvince.replace('p:','');
-      codes = codes.filter(c => (DATA.stores[c].p||'') === provKey);
-    } else if(selectedProvince.startsWith('thr:')){
-      // Threat view: filter by threat
-      const thrKey = selectedProvince.replace('thr:','');
-      codes = codes.filter(c => (DATA.stores[c].t||'').includes(thrKey));
-    } else if(selectedProvince.startsWith('g:') || selectedProvince.startsWith('q:')){
-      // GĐV/QLKV view: filter by GĐV or QLKV
-      const isGdv = selectedProvince.startsWith('g:');
-      const label = selectedProvince.substring(2);
-      codes = codes.filter(c => {
-        return isGdv ? (DATA.stores[c].g||'')===label : (DATA.stores[c].q||'')===label;
-      });
-    }
-  }
-  if(selectedDistrict){
-    const parts = selectedDistrict.replace('h:','').split('|');
-    const prov = parts[0];
-    const huyen = parts.slice(1).join('|');
-    codes = codes.filter(c => (DATA.stores[c].p||'') === prov && (DATA.stores[c].h||'') === huyen);
-  }
+  // Get stores filtered by global filters + Section 1 selection
+  let codes = selectedCodes();
 
   const m = state.tableMetric;
   const unit = m==='spd' ? 'SPD (tr/ngày)' : 'BPD (bill/ngày)';
@@ -1282,7 +1288,7 @@ function renderAll(){
   const rulesEl = $('#rules-section');
   if(rulesEl) rulesEl.style.display = 'none';
 
-  const codes = filteredStores();
+  const codes = selectedCodes();
   const sec1Title = state.view==='province' ? '🗺️ Theo Miền → Tỉnh → Huyện' : (state.view==='threat' ? '⚡ Theo Threat' : '👥 Theo GĐV → QLKV');
   $('#tbl-title').textContent = sec1Title;
 
