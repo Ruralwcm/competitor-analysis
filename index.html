@@ -213,7 +213,7 @@
 <div class="page">
 
   <header class="mast">
-    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.36 · 23/10/2026</span></h1>
+    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.37 · 23/10/2026</span></h1>
     <p class="sub">BHX / WCM / BHX+WCM · LFL W0–W52 · 282 CH</p>
   </header>
 
@@ -1067,19 +1067,20 @@ function renderThreatDetailTable(){
   let html = '';
   for(const r of rows){
     html += `<tr class="store-row clickable" data-code="${r.code}">
-      <td><span class="code">${r.code}</span> <span class="name">${r.s.n||''}</span><div class="w0-sub">📅 ${r.s.w0||'—'}</div></td>
+      <td><span class="code">${r.code}</span> <span class="name">${r.s.n||''}</span></td>
       <td><span class="tag ${thTag(r.s.t)}">${r.s.t}</span></td>
+      <td>${r.s.w0||'—'}</td>
       <td>${r.s.d||'—'}</td>
       ${kpiCells(r.a, m)}
     </tr>`;
   }
   $('#td-tbl').innerHTML = `<colgroup>
-    <col style="width:20%"><col style="width:6%"><col style="width:8%">
+    <col style="width:20%"><col style="width:6%"><col style="width:10%"><col style="width:8%">
     <col style="width:7%"><col style="width:7%"><col style="width:6.5%">
     <col style="width:7%"><col style="width:7%"><col style="width:6.5%">
     <col style="width:7.5%"><col style="width:7.5%">
   </colgroup><thead><tr>
-    <th>Tên Site</th><th>Threat</th><th>K. cách</th>
+    <th>Tên Site</th><th>Threat</th><th>Ngày mở</th><th>K. cách</th>
     <th class="num col-before">Base</th>
     <th class="num col-after">Actual</th>
     <th class="num col-impact-hdr">%Imp</th>
