@@ -215,7 +215,7 @@
 <div class="page">
 
   <header class="mast">
-    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.41 · 23/10/2026</span></h1>
+    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.42 · 23/10/2026</span></h1>
     <p class="sub">BHX / WCM / BHX+WCM · LFL W0–W52 · 282 CH</p>
   </header>
 
@@ -769,7 +769,17 @@ function renderChart(codes){
 /* ---------- Table cell helpers ---------- */
 function kpiCells(a, m){
   // Returns: Base | Actual | %Imp | Ctrl Base | Ctrl Actual | %Imp Ctrl | NET Imp | NET %
-  if(m==='spd' || m==='pct'){
+  if(m==='pct'){
+    return `<td class="num col-before">${fmtNum(a.bs,1)}</td>
+      <td class="num">${fmtNum(a.as,1)}</td>
+      <td class="num ${signCls(a.pctThreatS)}">${fmtPct(a.pctThreatS)}</td>
+      <td class="num col-before">${fmtNum(a.cs,1)}</td>
+      <td class="num">${fmtNum(a.cx,1)}</td>
+      <td class="num ${signCls(a.pctCtrlS)}">${fmtPct(a.pctCtrlS)}</td>
+      <td class="num col-impact ${signCls(a.ps)}"><b>${fmtPct(a.ps)}</b></td>
+      <td class="num col-impact ${signCls(a.ps)}"><b>${fmtPct(a.ps)}</b></td>`;
+  }
+  if(m==='spd'){
     return `<td class="num col-before">${fmtNum(a.bs,1)}</td>
       <td class="num">${fmtNum(a.as,1)}</td>
       <td class="num ${signCls(a.pctThreatS)}">${fmtPct(a.pctThreatS)}</td>
@@ -805,8 +815,11 @@ function nodeMatches(node){
 function renderTable(){
   const m = state.tableMetric;
   const unit = m==='spd' ? 'SPD (tr/ngày)' : 'BPD (bill/ngày)';
-  const sf = KPI_SORT[m==='spd'?'spd':'bpd'];
-  const kpiHead = KPI_HEADERS.map(([cls,label],i)=>`<th class="num ${cls}" data-sort="${sf[i]}">${label}</th>`).join('');
+  const sf = KPI_SORT[m==='bpd'?'bpd':'spd'];
+  const kpiHead = KPI_HEADERS.map(([cls,label],i)=>{
+    if(m==='pct' && label==='NET<br>Imp') label = 'NET<br>%';
+    return `<th class="num ${cls}" data-sort="${sf[i]}">${label}</th>`;
+  }).join('');
   const nodes = sortNodeList(buildTree());
   nodes.forEach(n=>{ if(n.children) sortNodeList(n.children); });
   const isProv = state.view === 'province';
@@ -1273,6 +1286,7 @@ function buildStoreTable(code){
   const s = DATA.series[code];
   const cm = state.drawerMetric;
   const isS = cm!=='bpd';
+  const isPct = cm==='pct';
   const ctrls = DATA.stores[code].controls || [];
   const ctrlRows = (w) => {
     let html = '';
@@ -1306,7 +1320,7 @@ function buildStoreTable(code){
       <td class="num">${fmtNum(cBaseV,1)}</td>
       <td class="num">${fmtNum(cActualV,1)}</td>
       <td class="num ${signCls(pctCtrl)}">${fmtPct(pctCtrl)}</td>
-      <td class="num ${signCls(netV)}"><b>${fmt(netV)}</b></td>
+      <td class="num ${signCls(isPct?pctV:netV)}"><b>${isPct?fmtPct(pctV):fmt(netV)}</b></td>
       <td class="num ${signCls(pctV)}"><b>${fmtPct(pctV)}</b></td>
     </tr>
     <tr class="wk-detail" data-w="${w}" style="display:none">
@@ -1326,7 +1340,7 @@ function buildStoreTable(code){
     <th class="num col-before">Ctrl Base</th>
     <th class="num col-after">Ctrl Actual</th>
     <th class="num">%Imp Ctrl</th>
-    <th class="num col-net">NET Imp</th>
+    <th class="num col-net">${isPct?'NET %':'NET Imp'}</th>
     <th class="num col-net">NET %</th>
   </tr></thead><tbody>${rows}</tbody>`;
 
