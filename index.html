@@ -55,7 +55,7 @@
   .vtabs button.on{color:var(--navy);border-bottom-color:var(--navy)}
 
   /* HÀNG 1 (full width): Bộ lọc chung */
-  .filter-bar-full{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;padding:12px 34px;border-bottom:1px solid var(--rule);background:#fff;position:sticky;top:48px;z-index:9}
+  .filter-bar-full{display:flex;flex-wrap:nowrap;gap:10px;align-items:flex-end;padding:10px 34px;border-bottom:1px solid var(--rule);background:#fff;position:sticky;top:48px;z-index:9}
   .fld{display:flex;flex-direction:column;gap:4px}
   .fld label{font-size:11px;font-weight:700;color:var(--ink-3);letter-spacing:.04em;text-transform:uppercase}
   .fld select,.fld input{font:inherit;font-size:13px;padding:6px 10px;border:1px solid var(--rule);border-radius:6px;color:var(--ink);background:#fff;min-width:110px}
@@ -213,7 +213,7 @@
 <div class="page">
 
   <header class="mast">
-    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.34 · 23/10/2026</span></h1>
+    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.35 · 23/10/2026</span></h1>
     <p class="sub">BHX / WCM / BHX+WCM · LFL W0–W52 · 282 CH</p>
   </header>
 
@@ -237,7 +237,7 @@
         <button data-m="bpd">BPD (bill/ngày)</button>
       </div>
     </div>
-    <div style="margin-left:auto;align-self:flex-end;margin-bottom:2px">
+    <div style="align-self:flex-end;margin-bottom:2px">
       <button class="btn" id="btn-reset">↺ Đặt lại</button>
     </div>
   </div>
