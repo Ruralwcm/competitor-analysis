@@ -213,7 +213,7 @@
 <div class="page">
 
   <header class="mast">
-    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.35 · 23/10/2026</span></h1>
+    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.36 · 23/10/2026</span></h1>
     <p class="sub">BHX / WCM / BHX+WCM · LFL W0–W52 · 282 CH</p>
   </header>
 
@@ -1210,7 +1210,7 @@ function weekDateRange(code, w){
   const start = new Date(base.getTime() + w*7*86400000);
   const end = new Date(start.getTime() + 6*86400000);
   const f = d => `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`;
-  return `${W[w]} (${f(start)} - ${f(end)})`;
+  return `${W[w]} (${f(start)}–${f(end)})`;
 }
 
 function drawStoreChart(code){
@@ -1219,7 +1219,7 @@ function drawStoreChart(code){
   const isS = cm==='spd';
   const labels=[],threat=[],control=[];
   for(let w=state.wfrom; w<=state.wto; w++){
-    labels.push(weekDateRange(code, w));
+    labels.push(W[w]);
     if(isS){
       threat.push((s.as[w]!=null && s.bs[w]!=null) ? (s.as[w]-s.bs[w]) : null);
       control.push((s.cx[w]!=null && s.cs[w]!=null) ? (s.cx[w]-s.cs[w]) : null);
@@ -1241,7 +1241,7 @@ function drawStoreChart(code){
         {label:'Control',data:control,borderColor:cControl,backgroundColor:cControl+'22',borderWidth:2,borderDash:[6,4],pointRadius:0,fill:false,tension:0.25,spanGaps:true},
         {label:'NET',data:net,borderColor:cNet,backgroundColor:cNet+'22',borderWidth:2.5,borderDash:[3,3],pointRadius:0,fill:false,tension:0.25,spanGaps:true}
       ]},
-      options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:true,labels:{usePointStyle:true,boxWidth:8,color:'#1A1F26',font:{weight:'600'}}},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.parsed.y==null?'—':c.parsed.y.toFixed(2)+' '+unit}`}}},scales:{x:{ticks:{maxTicksLimit:10,color:'#7C8592'},grid:{display:false}},y:{ticks:{color:'#7C8592'},grid:{color:'#E4E9EF'}}}}
+      options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:true,labels:{usePointStyle:true,boxWidth:8,color:'#1A1F26',font:{weight:'600'}}},tooltip:{callbacks:{title:items=>items.length?weekDateRange(code, state.wfrom + items[0].dataIndex):'',label:c=>`${c.dataset.label}: ${c.parsed.y==null?'—':c.parsed.y.toFixed(2)+' '+unit}`}}},scales:{x:{ticks:{maxTicksLimit:10,color:'#7C8592'},grid:{display:false}},y:{ticks:{color:'#7C8592'},grid:{color:'#E4E9EF'}}}}
     });
   },150);
 }
@@ -1263,7 +1263,7 @@ function buildStoreTable(code){
     const pctThreat = baseV && baseV!==0 ? ((actualV - baseV)/baseV*100) : null;
     const pctCtrl = cBaseV && cBaseV!==0 ? ((cActualV - cBaseV)/cBaseV*100) : null;
     rows += `<tr class="wk-row" data-w="${w}" style="cursor:pointer">
-      <td>${weekDateRange(code, w)}</td>
+      <td style="white-space:nowrap">${weekDateRange(code, w)}</td>
       <td class="num">${fmtNum(baseV,1)}</td>
       <td class="num">${fmtNum(actualV,1)}</td>
       <td class="num ${signCls(pctThreat)}">${fmtPct(pctThreat)}</td>
@@ -1282,7 +1282,7 @@ function buildStoreTable(code){
   const label = isS ? 'SPD (tr/ngày)' : 'BPD (bill/ngày)';
   const ctrlUnit = isS ? '(tr/ngày)' : '(bill/ngày)';
   $('#d-tbl').innerHTML = `<thead><tr>
-    <th>Tuần</th>
+    <th style="white-space:nowrap">Tuần</th>
     <th class="num col-before">Base</th>
     <th class="num col-after">Actual</th>
     <th class="num">%Imp Thr</th>
