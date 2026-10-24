@@ -215,7 +215,7 @@
 <div class="page">
 
   <header class="mast">
-    <h1>Competitor Affect by HaoDT <span class="ver-badge" id="ver-badge">v4.48 · 23/10/2026</span></h1>
+    <h1>Competitor Affect by HaoDT <span class="ver-badge" id="ver-badge">v4.49 · 23/10/2026</span></h1>
     <p class="sub">BHX / WCM / BHX+WCM · LFL W0–W52 · 282 CH</p>
   </header>
 
@@ -1080,7 +1080,7 @@ function renderThreatDetailTable(){
   for(const r of rows){
     html += `<tr class="store-row clickable" data-code="${r.code}">
       <td><span class="code">${r.code}</span> <span class="name">${r.s.n||''}</span></td>
-      <td><span class="tag ${thTag(r.s.t)}">${r.s.t}</span></td>
+      <td>${(r.s.t||'').split(' + ').map(t=>`<span class="tag ${thTag(t)}">${t}</span>`).join(' ')}</td>
       <td>${r.s.w0||'—'}</td>
       <td>${r.s.d||'—'}</td>
       ${kpiCells(r.a, m)}
@@ -1153,7 +1153,7 @@ function openDrawer(code){
     <div class="d-body">
       <div class="d-info">
         <div class="d-line"><span class="k">Tỉnh</span> <span class="v">${s.p}</span> · <span class="k">Huyện</span> <span class="v">${s.h||'—'}</span> · <span class="k">GĐV</span> <span class="v">${s.g}</span> · <span class="k">QLKV</span> <span class="v">${s.q}</span></div>
-        <div class="d-line"><span class="k">Threat</span> <span class="v"><span class="tag ${thTag(s.t)}">${s.t}</span></span> · <span class="k">Khoảng cách</span> <span class="v">${s.d}</span> · <span class="k">Ngày affect</span> <span class="v">${s.w0}</span></div>
+        <div class="d-line"><span class="k">Threat</span> <span class="v">${(s.t||'').split(' + ').map(t=>`<span class="tag ${thTag(t)}">${t}</span>`).join(' ')}</span> · <span class="k">Khoảng cách</span> <span class="v">${s.d}</span> · <span class="k">Ngày affect</span> <span class="v">${s.w0}</span></div>
       </div>
       <div class="d-box">
         <h3>KPI Tổng hợp (${W[state.wfrom]}–${W[state.wto]})</h3>
