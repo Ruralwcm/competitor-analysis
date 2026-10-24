@@ -213,7 +213,7 @@
 <div class="page">
 
   <header class="mast">
-    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.38 · 23/10/2026</span></h1>
+    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.39 · 23/10/2026</span></h1>
     <p class="sub">BHX / WCM / BHX+WCM · LFL W0–W52 · 282 CH</p>
   </header>
 
@@ -1201,6 +1201,19 @@ function openDrawer(code){
 }
 function closeDrawer(){ $('#drawer').classList.remove('open'); $('#overlay').classList.remove('show'); }
 
+function baselineRange(code){
+  const st = DATA.stores[code];
+  const w0 = st && st.w0;
+  if(!w0 || w0.indexOf('/')<0) return '';
+  const p = w0.split('/');
+  const base = new Date(+p[2], +p[1]-1, +p[0]);
+  if(isNaN(base.getTime())) return '';
+  const start = new Date(base.getTime() - 56*86400000);   // W-8
+  const end = new Date(base.getTime() - 1*86400000);      // W-1 (end)
+  const f = d => `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`;
+  return `${f(start)}–${f(end)}`;
+}
+
 function weekDateRange(code, w){
   const st = DATA.stores[code];
   const w0 = st && st.w0;
@@ -1278,6 +1291,7 @@ function buildStoreTable(code){
     <tr class="wk-detail" data-w="${w}" style="display:none">
       <td colspan="9" style="background:#F8FAFC;padding:8px 12px;font-size:12px;color:var(--ink-2)">
         <div><b>${weekDateRange(code, w)}</b> · Sale tuần: Base <b>${fmtNum(s.ws[w],1)}</b> → Actual <b>${fmtNum(s.wa[w],1)}</b> tr/tuần · Bill tuần: Base <b>${fmtNum(s.wb[w],1)}</b> → Actual <b>${fmtNum(s.wc[w],1)}</b> bill/tuần · Control: <b>${s.cn[w]!=null?s.cn[w]:'—'}</b> CH</div>
+        <div style="margin-top:4px">Before (baseline W−8→W−1): <b>${baselineRange(code)}</b></div>
         <div style="margin-top:6px;color:var(--ink-3)"><b>Danh sách CH control (${(DATA.stores[code].controls||[]).length}):</b><br>${ctrlNames || '—'}</div>
       </td>
     </tr>`;
