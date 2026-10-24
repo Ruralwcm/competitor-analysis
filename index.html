@@ -115,6 +115,7 @@
   tbody tr.clickable{cursor:pointer}
   td .code{font-weight:700;color:var(--navy)}
   td .name{color:var(--ink-2)}
+  td .w0-sub{font-size:10.5px;color:var(--ink-3);margin-top:2px}
   td .sub{font-size:12px;color:var(--ink-3)}
 
   .tag{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;background:var(--band);color:var(--ink-2);border:1px solid var(--rule-2)}
@@ -212,7 +213,7 @@
 <div class="page">
 
   <header class="mast">
-    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.33 · 23/10/2026</span></h1>
+    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.34 · 23/10/2026</span></h1>
     <p class="sub">BHX / WCM / BHX+WCM · LFL W0–W52 · 282 CH</p>
   </header>
 
@@ -1055,26 +1056,30 @@ function renderThreatDetailTable(){
     const netPct = m==='spd' ? a.ps : a.pb;
     rows.push({ code, s, a, netImp, netPct });
   }
-  // Sort by NET Impact (worst first)
-  rows.sort((a,b) => (a.netImp ?? Infinity) - (b.netImp ?? Infinity));
+  // Sort by Ngày affect (W0) ascending
+  const w0key = w0 => {
+    if(!w0 || w0.indexOf('/')<0) return '99999999';
+    const p = w0.split('/');
+    return `${p[2]}${String(p[1]).padStart(2,'0')}${String(p[0]).padStart(2,'0')}`;
+  };
+  rows.sort((a,b) => w0key(a.s.w0).localeCompare(w0key(b.s.w0)));
 
   let html = '';
   for(const r of rows){
     html += `<tr class="store-row clickable" data-code="${r.code}">
-      <td><span class="code">${r.code}</span> <span class="name">${r.s.n||''}</span></td>
+      <td><span class="code">${r.code}</span> <span class="name">${r.s.n||''}</span><div class="w0-sub">📅 ${r.s.w0||'—'}</div></td>
       <td><span class="tag ${thTag(r.s.t)}">${r.s.t}</span></td>
-      <td>${r.s.w0||'—'}</td>
       <td>${r.s.d||'—'}</td>
       ${kpiCells(r.a, m)}
     </tr>`;
   }
   $('#td-tbl').innerHTML = `<colgroup>
-    <col style="width:20%"><col style="width:6%"><col style="width:10%"><col style="width:8%">
+    <col style="width:20%"><col style="width:6%"><col style="width:8%">
     <col style="width:7%"><col style="width:7%"><col style="width:6.5%">
     <col style="width:7%"><col style="width:7%"><col style="width:6.5%">
     <col style="width:7.5%"><col style="width:7.5%">
   </colgroup><thead><tr>
-    <th>Tên Site</th><th>Threat</th><th>Ngày mở</th><th>K. cách</th>
+    <th>Tên Site</th><th>Threat</th><th>K. cách</th>
     <th class="num col-before">Base</th>
     <th class="num col-after">Actual</th>
     <th class="num col-impact-hdr">%Imp</th>
