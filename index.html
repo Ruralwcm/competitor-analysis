@@ -215,7 +215,7 @@
 <div class="page">
 
   <header class="mast">
-    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.43 · 23/10/2026</span></h1>
+    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.44 · 23/10/2026</span></h1>
     <p class="sub">BHX / WCM / BHX+WCM · LFL W0–W52 · 282 CH</p>
   </header>
 
@@ -345,13 +345,12 @@ let selectedDistrict = null; // district selection for Section 2
 let drawerCode = null;
 
 const KPI_SORT = {
-  spd: ['bs','as','pctThreatS','cs','cx','pctCtrlS','ns','ps'],
-  bpd: ['bb','ab','pctThreatB','cb','cy','pctCtrlB','nb','pb']
+  spd: ['bs','as','pctThreatS','cs','cx','pctCtrlS'],
+  bpd: ['bb','ab','pctThreatB','cb','cy','pctCtrlB']
 };
 const KPI_HEADERS = [
   ['col-before','Base'], ['col-after','Actual'], ['col-impact-hdr','%Imp'],
-  ['col-before','Ctrl<br>Base'], ['col-after','Ctrl<br>Actual'], ['col-impact','Ctrl%'],
-  ['col-impact','NET<br>Imp'], ['col-impact','NET%']
+  ['col-before','Ctrl<br>Base'], ['col-after','Ctrl<br>Actual'], ['col-impact','Ctrl%']
 ];
 const MIEN_MAP = {
   'Hà Nội':'Đồng bằng sông Hồng', 'Hải Phòng':'Đồng bằng sông Hồng', 'Bắc Ninh':'Đồng bằng sông Hồng',
@@ -768,35 +767,21 @@ function renderChart(codes){
 
 /* ---------- Table cell helpers ---------- */
 function kpiCells(a, m){
-  // Returns: Base | Actual | %Imp | Ctrl Base | Ctrl Actual | %Imp Ctrl | NET Imp | NET %
-  if(m==='pct'){
-    return `<td class="num col-before">${fmtNum(a.bs,1)}</td>
-      <td class="num">${fmtNum(a.as,1)}</td>
-      <td class="num ${signCls(a.pctThreatS)}">${fmtPct(a.pctThreatS)}</td>
-      <td class="num col-before">${fmtNum(a.cs,1)}</td>
-      <td class="num">${fmtNum(a.cx,1)}</td>
-      <td class="num ${signCls(a.pctCtrlS)}">${fmtPct(a.pctCtrlS)}</td>
-      <td class="num col-impact ${signCls(a.ps)}"><b>${fmtPct(a.ps)}</b></td>
-      <td class="num col-impact ${signCls(a.ps)}"><b>${fmtPct(a.ps)}</b></td>`;
+  // Returns: Base | Actual | %Imp | Ctrl Base | Ctrl Actual | %Imp Ctrl
+  if(m==='bpd'){
+    return `<td class="num col-before">${fmtNum(a.bb,1)}</td>
+      <td class="num">${fmtNum(a.ab,1)}</td>
+      <td class="num ${signCls(a.pctThreatB)}">${fmtPct(a.pctThreatB)}</td>
+      <td class="num col-before">${fmtNum(a.cb,1)}</td>
+      <td class="num">${fmtNum(a.cy,1)}</td>
+      <td class="num ${signCls(a.pctCtrlB)}">${fmtPct(a.pctCtrlB)}</td>`;
   }
-  if(m==='spd'){
-    return `<td class="num col-before">${fmtNum(a.bs,1)}</td>
-      <td class="num">${fmtNum(a.as,1)}</td>
-      <td class="num ${signCls(a.pctThreatS)}">${fmtPct(a.pctThreatS)}</td>
-      <td class="num col-before">${fmtNum(a.cs,1)}</td>
-      <td class="num">${fmtNum(a.cx,1)}</td>
-      <td class="num ${signCls(a.pctCtrlS)}">${fmtPct(a.pctCtrlS)}</td>
-      <td class="num col-impact ${signCls(a.ns)}"><b>${fmt(a.ns)}</b></td>
-      <td class="num col-impact ${signCls(a.ps)}"><b>${fmtPct(a.ps)}</b></td>`;
-  }
-  return `<td class="num col-before">${fmtNum(a.bb,1)}</td>
-    <td class="num">${fmtNum(a.ab,1)}</td>
-    <td class="num ${signCls(a.pctThreatB)}">${fmtPct(a.pctThreatB)}</td>
-    <td class="num col-before">${fmtNum(a.cb,1)}</td>
-    <td class="num">${fmtNum(a.cy,1)}</td>
-    <td class="num ${signCls(a.pctCtrlB)}">${fmtPct(a.pctCtrlB)}</td>
-    <td class="num col-impact ${signCls(a.nb)}"><b>${fmt(a.nb)}</b></td>
-    <td class="num col-impact ${signCls(a.pb)}"><b>${fmtPct(a.pb)}</b></td>`;
+  return `<td class="num col-before">${fmtNum(a.bs,1)}</td>
+    <td class="num">${fmtNum(a.as,1)}</td>
+    <td class="num ${signCls(a.pctThreatS)}">${fmtPct(a.pctThreatS)}</td>
+    <td class="num col-before">${fmtNum(a.cs,1)}</td>
+    <td class="num">${fmtNum(a.cx,1)}</td>
+    <td class="num ${signCls(a.pctCtrlS)}">${fmtPct(a.pctCtrlS)}</td>`;
 }
 
 function nodeMatches(node){
@@ -880,8 +865,8 @@ function renderTable(){
     const head = `<colgroup>
     <col style="width:21%"><col style="width:6%">
     <col style="width:5%"><col style="width:5%"><col style="width:7%">
-    <col style="width:7%"><col style="width:7%"><col style="width:6.5%">
-    <col style="width:7%"><col style="width:7%"><col style="width:6.5%"><col style="width:7.5%"><col style="width:7.5%">
+    <col style="width:9.5%"><col style="width:9.5%"><col style="width:9%">
+    <col style="width:9.5%"><col style="width:9.5%"><col style="width:9%">
   </colgroup><thead><tr>
     <th>Miền</th><th class="num">SL CH</th>
     <th class="num">WCM</th><th class="num">BHX</th><th class="num">BHX+<br>WCM</th>
@@ -976,8 +961,8 @@ function renderTable(){
     const head = `<colgroup>
     <col style="width:21%"><col style="width:6%">
     <col style="width:5%"><col style="width:5%"><col style="width:7%">
-    <col style="width:7%"><col style="width:7%"><col style="width:6.5%">
-    <col style="width:7%"><col style="width:7%"><col style="width:6.5%"><col style="width:7.5%"><col style="width:7.5%">
+    <col style="width:9.5%"><col style="width:9.5%"><col style="width:9%">
+    <col style="width:9.5%"><col style="width:9.5%"><col style="width:9%">
   </colgroup><thead><tr>
     <th>GĐV / QLKV</th><th class="num">SL CH</th>
     <th class="num">WCM</th><th class="num">BHX</th><th class="num">BHX+<br>WCM</th>
@@ -1023,8 +1008,8 @@ function renderTable(){
 
     const head = `<colgroup>
     <col style="width:39%"><col style="width:5%">
-    <col style="width:7%"><col style="width:7%"><col style="width:6.5%">
-    <col style="width:7%"><col style="width:7%"><col style="width:6.5%"><col style="width:7.5%"><col style="width:7.5%">
+    <col style="width:9.5%"><col style="width:9.5%"><col style="width:9%">
+    <col style="width:9.5%"><col style="width:9.5%"><col style="width:9%">
   </colgroup><thead><tr>
     <th>Threat</th><th class="num">SL CH</th>
     ${kpiHead}
@@ -1093,9 +1078,8 @@ function renderThreatDetailTable(){
   }
   $('#td-tbl').innerHTML = `<colgroup>
     <col style="width:20%"><col style="width:6%"><col style="width:10%"><col style="width:8%">
-    <col style="width:7%"><col style="width:7%"><col style="width:6.5%">
-    <col style="width:7%"><col style="width:7%"><col style="width:6.5%">
-    <col style="width:7.5%"><col style="width:7.5%">
+    <col style="width:9.5%"><col style="width:9.5%"><col style="width:9%">
+    <col style="width:9.5%"><col style="width:9.5%"><col style="width:9%">
   </colgroup><thead><tr>
     <th>Tên Site</th><th>Threat</th><th>Ngày mở</th><th>K. cách</th>
     <th class="num col-before">Base</th>
@@ -1104,8 +1088,6 @@ function renderThreatDetailTable(){
     <th class="num col-before">Ctrl Base</th>
     <th class="num col-after">Ctrl Actual</th>
     <th class="num col-impact">Ctrl %</th>
-    <th class="num col-impact">NET Imp</th>
-    <th class="num col-impact">NET %</th>
   </tr></thead><tbody>${html}</tbody>`;
   $('#td-cnt').textContent = `${rows.length} dòng`;
 
@@ -1301,7 +1283,6 @@ function buildStoreTable(code){
       <td class="num" style="font-size:12px;padding:4px 3px">${fmtNum(bpd,1)}</td>
       <td class="num" style="font-size:12px;padding:4px 3px">${fmtNum(apd,1)}</td>
       <td class="num ${signCls(pct)}" style="font-size:12px;padding:4px 3px">${fmtPct(pct)}</td>
-      <td colspan="2"></td>
     </tr>`;
     }
     return html;
@@ -1326,11 +1307,9 @@ function buildStoreTable(code){
       <td class="num">${fmtNum(cBaseV,1)}</td>
       <td class="num">${fmtNum(cActualV,1)}</td>
       <td class="num ${signCls(pctCtrl)}">${fmtPct(pctCtrl)}</td>
-      <td class="num ${signCls(isPct?pctV:netV)}"><b>${isPct?fmtPct(pctV):fmt(netV)}</b></td>
-      <td class="num ${signCls(pctV)}"><b>${fmtPct(pctV)}</b></td>
     </tr>
     <tr class="wk-detail" data-w="${w}" style="display:none">
-      <td colspan="9" style="background:#F8FAFC;padding:5px 12px;font-size:12px;color:var(--ink-2)">
+      <td colspan="7" style="background:#F8FAFC;padding:5px 12px;font-size:12px;color:var(--ink-2)">
         <b>Store Control (${ctrls.length})</b> — ${weekDateRange(code, w)}
       </td>
     </tr>
@@ -1346,8 +1325,6 @@ function buildStoreTable(code){
     <th class="num col-before">Ctrl Base</th>
     <th class="num col-after">Ctrl Actual</th>
     <th class="num">%Imp Ctrl</th>
-    <th class="num col-net">${isPct?'NET %':'NET Imp'}</th>
-    <th class="num col-net">NET %</th>
   </tr></thead><tbody>${rows}</tbody>`;
 
   $('#d-tbl').querySelectorAll('tr.wk-row').forEach(tr=>{
