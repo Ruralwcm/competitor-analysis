@@ -215,7 +215,7 @@
 <div class="page">
 
   <header class="mast">
-    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.40 · 23/10/2026</span></h1>
+    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.41 · 23/10/2026</span></h1>
     <p class="sub">BHX / WCM / BHX+WCM · LFL W0–W52 · 282 CH</p>
   </header>
 
@@ -237,6 +237,7 @@
       <div class="seg" id="metric-seg">
         <button data-m="spd" class="on">SPD (tr/ngày)</button>
         <button data-m="bpd">BPD (bill/ngày)</button>
+        <button data-m="pct">% Net</button>
       </div>
     </div>
     <div style="align-self:flex-end;margin-bottom:2px">
@@ -637,14 +638,15 @@ function renderKPISection(codes){
   const bsAll = mean(aggs.map(a=>a.bs).filter(v=>v!=null));
   const bbAll = mean(aggs.map(a=>a.bb).filter(v=>v!=null));
   const m = state.tableMetric;
-  const netVal = m==='spd'?ns:nb;
-  const netPct = m==='spd'?ps:pb;
-  const bAll = m==='spd'?bsAll:bbAll;
-  const metricLabel = m==='spd'?'SPD (tr/ngày)':'BPD (bill/ngày)';
+  const isPct = m==='pct';
+  const netVal = m==='bpd'?nb:ns;
+  const netPct = m==='bpd'?pb:ps;
+  const bAll = m==='bpd'?bbAll:bsAll;
+  const metricLabel = m==='bpd'?'BPD (bill/ngày)':'SPD (tr/ngày)';
 
   document.getElementById('kpi-section').innerHTML = `
     <div class="kpi-card"><div class="klab">NET % Impact</div><div class="kval ${signCls(netPct)}">${fmtPct(netPct)}</div><div class="khint">% tác động ròng</div></div>
-    <div class="kpi-card"><div class="klab">NET Impact ${m==='spd'?'SPD':'BPD'}</div><div class="kval ${signCls(netVal)}">${fmt(netVal)}</div><div class="khint">${m==='spd'?'tr/ngày':'bill/ngày'}</div></div>
+    <div class="kpi-card"><div class="klab">${isPct?'NET Impact %':'NET Impact '+(m==='spd'?'SPD':'BPD')}</div><div class="kval ${signCls(isPct?netPct:netVal)}">${isPct?fmtPct(netPct):fmt(netVal)}</div><div class="khint">${isPct?'% Net':(m==='spd'?'tr/ngày':'bill/ngày')}</div></div>
     <div class="kpi-card"><div class="klab">Số CH</div><div class="kval" style="color:var(--navy)">${count}</div><div class="khint">Cửa hàng affected</div></div>
     <div class="kpi-card"><div class="klab">Avg Baseline</div><div class="kval" style="color:var(--ink-2)">${fmtNum(bAll,1)}</div><div class="khint">${metricLabel}</div></div>
   `;
@@ -655,7 +657,7 @@ let chart = null;
 /* ---------- Threat by Week pivot table (NET % impact) ---------- */
 function renderThreatWeekTable(){
   const m = state.tableMetric;
-  const field = m==='spd' ? 'ps' : 'pb';
+  const field = m==='bpd' ? 'pb' : 'ps';
   const threats = ['BHX','WCM','BHX + WCM'];
   const dists = DATA.meta.distances || [];
   const codes = filteredStores();
@@ -767,7 +769,7 @@ function renderChart(codes){
 /* ---------- Table cell helpers ---------- */
 function kpiCells(a, m){
   // Returns: Base | Actual | %Imp | Ctrl Base | Ctrl Actual | %Imp Ctrl | NET Imp | NET %
-  if(m==='spd'){
+  if(m==='spd' || m==='pct'){
     return `<td class="num col-before">${fmtNum(a.bs,1)}</td>
       <td class="num">${fmtNum(a.as,1)}</td>
       <td class="num ${signCls(a.pctThreatS)}">${fmtPct(a.pctThreatS)}</td>
@@ -1054,8 +1056,8 @@ function renderThreatDetailTable(){
   for(const code of codes){
     const s = DATA.stores[code];
     const a = storeAgg(code);
-    const netImp = m==='spd' ? a.ns : a.nb;
-    const netPct = m==='spd' ? a.ps : a.pb;
+    const netImp = m==='bpd' ? a.nb : a.ns;
+    const netPct = m==='bpd' ? a.pb : a.ps;
     rows.push({ code, s, a, netImp, netPct });
   }
   // Sort by Ngày affect (W0) ascending
@@ -1126,7 +1128,7 @@ function openDrawer(code){
   const s = DATA.stores[code];
   const agg = storeAgg(code);
   const m = state.drawerMetric;
-  const isS = m==='spd';
+  const isS = m!=='bpd';
   $('#drawer').innerHTML = `
     <div class="d-head">
       <div style="flex:1">
@@ -1137,6 +1139,7 @@ function openDrawer(code){
         <span style="font-size:11px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.03em">Chỉ số</span>
         <button data-m="spd" class="${m==='spd'?'on':''}">SPD (tr/ngày)</button>
         <button data-m="bpd" class="${m==='bpd'?'on':''}">BPD (bill/ngày)</button>
+        <button data-m="pct" class="${m==='pct'?'on':''}">% Net</button>
       </div>
       <button class="close" id="d-close">×</button>
     </div>
@@ -1233,10 +1236,14 @@ function drawStoreChart(code){
   const s = DATA.series[code];
   const cm = state.drawerMetric;
   const isS = cm==='spd';
+  const isPct = cm==='pct';
   const labels=[],threat=[],control=[];
   for(let w=state.wfrom; w<=state.wto; w++){
     labels.push(W[w]);
-    if(isS){
+    if(isPct){
+      threat.push((s.as[w]!=null && s.bs[w]!=null && s.bs[w]!==0) ? (s.as[w]-s.bs[w])/s.bs[w]*100 : null);
+      control.push((s.cx[w]!=null && s.cs[w]!=null && s.cs[w]!==0) ? (s.cx[w]-s.cs[w])/s.cs[w]*100 : null);
+    } else if(isS){
       threat.push((s.as[w]!=null && s.bs[w]!=null) ? (s.as[w]-s.bs[w]) : null);
       control.push((s.cx[w]!=null && s.cs[w]!=null) ? (s.cx[w]-s.cs[w]) : null);
     } else {
@@ -1244,7 +1251,7 @@ function drawStoreChart(code){
       control.push((s.cy[w]!=null && s.cb[w]!=null) ? (s.cy[w]-s.cb[w]) : null);
     }
   }
-  const unit = isS ? 'tr/ngày' : 'bill/ngày';
+  const unit = isPct ? '%' : (isS ? 'tr/ngày' : 'bill/ngày');
   const cThreat = '#d71920', cControl = '#16a34a', cNet = '#2980b9';
   const net = threat.map((t,i)=>(t!=null && control[i]!=null) ? (t - control[i]) : null);
   setTimeout(()=>{
@@ -1265,7 +1272,7 @@ function drawStoreChart(code){
 function buildStoreTable(code){
   const s = DATA.series[code];
   const cm = state.drawerMetric;
-  const isS = cm==='spd';
+  const isS = cm!=='bpd';
   const ctrls = DATA.stores[code].controls || [];
   const ctrlRows = (w) => {
     let html = '';
