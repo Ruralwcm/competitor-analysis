@@ -215,7 +215,7 @@
 <div class="page">
 
   <header class="mast">
-    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.44 · 23/10/2026</span></h1>
+    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.45 · 23/10/2026</span></h1>
     <p class="sub">BHX / WCM / BHX+WCM · LFL W0–W52 · 282 CH</p>
   </header>
 
@@ -237,7 +237,6 @@
       <div class="seg" id="metric-seg">
         <button data-m="spd" class="on">SPD (tr/ngày)</button>
         <button data-m="bpd">BPD (bill/ngày)</button>
-        <button data-m="pct">% Net</button>
       </div>
     </div>
     <div style="align-self:flex-end;margin-bottom:2px">
@@ -286,7 +285,14 @@
         <div class="tbl-scroll" style="max-height:300px"><table id="tw-tbl" class="tw-tbl"></table></div>
       </div>
       <div class="panel" id="cell-chart" style="flex:0 0 auto">
-        <div class="panel-title" id="chart-title">NET Impact — Threat by Week (W0–W52)</div>
+        <div class="panel-title" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <span id="chart-title">NET Impact — Threat by Week (W0–W52)</span>
+          <span class="seg" id="chart-metric-seg" style="margin-left:auto">
+            <button data-m="spd" class="on">SPD</button>
+            <button data-m="bpd">BPD</button>
+            <button data-m="pct">% Net</button>
+          </span>
+        </div>
         <div class="canvas-box" style="height:360px"><canvas id="chart"></canvas></div>
       </div>
     </div>
@@ -345,12 +351,13 @@ let selectedDistrict = null; // district selection for Section 2
 let drawerCode = null;
 
 const KPI_SORT = {
-  spd: ['bs','as','pctThreatS','cs','cx','pctCtrlS'],
-  bpd: ['bb','ab','pctThreatB','cb','cy','pctCtrlB']
+  spd: ['bs','as','pctThreatS','cs','cx','pctCtrlS','ns','ps'],
+  bpd: ['bb','ab','pctThreatB','cb','cy','pctCtrlB','nb','pb']
 };
 const KPI_HEADERS = [
   ['col-before','Base'], ['col-after','Actual'], ['col-impact-hdr','%Imp'],
-  ['col-before','Ctrl<br>Base'], ['col-after','Ctrl<br>Actual'], ['col-impact','Ctrl%']
+  ['col-before','Ctrl<br>Base'], ['col-after','Ctrl<br>Actual'], ['col-impact','Ctrl%'],
+  ['col-impact','NET<br>Imp'], ['col-impact','NET%']
 ];
 const MIEN_MAP = {
   'Hà Nội':'Đồng bằng sông Hồng', 'Hải Phòng':'Đồng bằng sông Hồng', 'Bắc Ninh':'Đồng bằng sông Hồng',
@@ -482,13 +489,13 @@ function weeklySeries(codes){
       const s=DATA.series[c];
       if(!s) continue;
       let t = null, ct = null;
-      if(state.tableMetric==='spd'){
+      if(state.chartMetric==='spd'){
         if(s.as[w]!=null && s.bs[w]!=null) t = s.as[w]-s.bs[w];
         if(s.cx[w]!=null && s.cs[w]!=null) ct = s.cx[w]-s.cs[w];
-      } else if(state.tableMetric==='bpd'){
+      } else if(state.chartMetric==='bpd'){
         if(s.ab[w]!=null && s.bb[w]!=null) t = s.ab[w]-s.bb[w];
         if(s.cy[w]!=null && s.cb[w]!=null) ct = s.cy[w]-s.cb[w];
-      } else if(state.tableMetric==='pct'){
+      } else if(state.chartMetric==='pct'){
         if(s.as[w]!=null && s.bs[w]!=null && s.bs[w]!==0) t = (s.as[w]-s.bs[w])/s.bs[w]*100;
         if(s.cx[w]!=null && s.cs[w]!=null && s.cs[w]!==0) ct = (s.cx[w]-s.cs[w])/s.cs[w]*100;
       }
@@ -728,8 +735,6 @@ function renderThreatWeekTable(){
 
 function renderChart(codes){
   if(typeof Chart==='undefined'){ const el=$('#chart-title'); if(el) el.textContent='⚠️ Biểu đồ không tải được, vui lòng tải lại trang'; return; }
-  /* v4.2: Single shared metric toggle; chart always follows state.tableMetric */
-  state.chartMetric = state.tableMetric;
   const {threat, control} = weeklySeries(codes);
   const labels = threat.map(s=>s.w);
   const threatData = threat.map(s=>s.v);
@@ -738,8 +743,8 @@ function renderChart(codes){
   const cThreat = '#d71920';
   const cControl = '#16a34a';
   const cNet = '#2980b9';
-  const yFmt = state.tableMetric==='pct' ? (v=>v.toFixed(1)+'%') : (v=>v.toFixed(2));
-  const unit = state.tableMetric==='spd' ? 'SPD (tr/ngày)' : (state.tableMetric==='bpd' ? 'BPD (bill/ngày)' : '%');
+  const yFmt = state.chartMetric==='pct' ? (v=>v.toFixed(1)+'%') : (v=>v.toFixed(2));
+  const unit = state.chartMetric==='spd' ? 'SPD (tr/ngày)' : (state.chartMetric==='bpd' ? 'BPD (bill/ngày)' : '%');
   $('#chart-title').textContent = 'Chart NET Impact đầy đủ — W0–W52: Threat vs Control (' + unit + ')';
   const ctx = $('#chart');
   if(chart) chart.destroy();
@@ -767,21 +772,25 @@ function renderChart(codes){
 
 /* ---------- Table cell helpers ---------- */
 function kpiCells(a, m){
-  // Returns: Base | Actual | %Imp | Ctrl Base | Ctrl Actual | %Imp Ctrl
+  // Returns: Base | Actual | %Imp | Ctrl Base | Ctrl Actual | %Imp Ctrl | NET Imp | NET %
   if(m==='bpd'){
     return `<td class="num col-before">${fmtNum(a.bb,1)}</td>
       <td class="num">${fmtNum(a.ab,1)}</td>
       <td class="num ${signCls(a.pctThreatB)}">${fmtPct(a.pctThreatB)}</td>
       <td class="num col-before">${fmtNum(a.cb,1)}</td>
       <td class="num">${fmtNum(a.cy,1)}</td>
-      <td class="num ${signCls(a.pctCtrlB)}">${fmtPct(a.pctCtrlB)}</td>`;
+      <td class="num ${signCls(a.pctCtrlB)}">${fmtPct(a.pctCtrlB)}</td>
+      <td class="num col-impact ${signCls(a.nb)}"><b>${fmt(a.nb)}</b></td>
+      <td class="num col-impact ${signCls(a.pb)}"><b>${fmtPct(a.pb)}</b></td>`;
   }
   return `<td class="num col-before">${fmtNum(a.bs,1)}</td>
     <td class="num">${fmtNum(a.as,1)}</td>
     <td class="num ${signCls(a.pctThreatS)}">${fmtPct(a.pctThreatS)}</td>
     <td class="num col-before">${fmtNum(a.cs,1)}</td>
     <td class="num">${fmtNum(a.cx,1)}</td>
-    <td class="num ${signCls(a.pctCtrlS)}">${fmtPct(a.pctCtrlS)}</td>`;
+    <td class="num ${signCls(a.pctCtrlS)}">${fmtPct(a.pctCtrlS)}</td>
+    <td class="num col-impact ${signCls(a.ns)}"><b>${fmt(a.ns)}</b></td>
+    <td class="num col-impact ${signCls(a.ps)}"><b>${fmtPct(a.ps)}</b></td>`;
 }
 
 function nodeMatches(node){
@@ -865,8 +874,8 @@ function renderTable(){
     const head = `<colgroup>
     <col style="width:21%"><col style="width:6%">
     <col style="width:5%"><col style="width:5%"><col style="width:7%">
-    <col style="width:9.5%"><col style="width:9.5%"><col style="width:9%">
-    <col style="width:9.5%"><col style="width:9.5%"><col style="width:9%">
+    <col style="width:7%"><col style="width:7%"><col style="width:6.5%">
+    <col style="width:7%"><col style="width:7%"><col style="width:6.5%"><col style="width:7.5%"><col style="width:7.5%">
   </colgroup><thead><tr>
     <th>Miền</th><th class="num">SL CH</th>
     <th class="num">WCM</th><th class="num">BHX</th><th class="num">BHX+<br>WCM</th>
@@ -961,8 +970,8 @@ function renderTable(){
     const head = `<colgroup>
     <col style="width:21%"><col style="width:6%">
     <col style="width:5%"><col style="width:5%"><col style="width:7%">
-    <col style="width:9.5%"><col style="width:9.5%"><col style="width:9%">
-    <col style="width:9.5%"><col style="width:9.5%"><col style="width:9%">
+    <col style="width:7%"><col style="width:7%"><col style="width:6.5%">
+    <col style="width:7%"><col style="width:7%"><col style="width:6.5%"><col style="width:7.5%"><col style="width:7.5%">
   </colgroup><thead><tr>
     <th>GĐV / QLKV</th><th class="num">SL CH</th>
     <th class="num">WCM</th><th class="num">BHX</th><th class="num">BHX+<br>WCM</th>
@@ -1008,8 +1017,8 @@ function renderTable(){
 
     const head = `<colgroup>
     <col style="width:39%"><col style="width:5%">
-    <col style="width:9.5%"><col style="width:9.5%"><col style="width:9%">
-    <col style="width:9.5%"><col style="width:9.5%"><col style="width:9%">
+    <col style="width:7%"><col style="width:7%"><col style="width:6.5%">
+    <col style="width:7%"><col style="width:7%"><col style="width:6.5%"><col style="width:7.5%"><col style="width:7.5%">
   </colgroup><thead><tr>
     <th>Threat</th><th class="num">SL CH</th>
     ${kpiHead}
@@ -1078,8 +1087,9 @@ function renderThreatDetailTable(){
   }
   $('#td-tbl').innerHTML = `<colgroup>
     <col style="width:20%"><col style="width:6%"><col style="width:10%"><col style="width:8%">
-    <col style="width:9.5%"><col style="width:9.5%"><col style="width:9%">
-    <col style="width:9.5%"><col style="width:9.5%"><col style="width:9%">
+    <col style="width:7%"><col style="width:7%"><col style="width:6.5%">
+    <col style="width:7%"><col style="width:7%"><col style="width:6.5%">
+    <col style="width:7.5%"><col style="width:7.5%">
   </colgroup><thead><tr>
     <th>Tên Site</th><th>Threat</th><th>Ngày mở</th><th>K. cách</th>
     <th class="num col-before">Base</th>
@@ -1088,6 +1098,8 @@ function renderThreatDetailTable(){
     <th class="num col-before">Ctrl Base</th>
     <th class="num col-after">Ctrl Actual</th>
     <th class="num col-impact">Ctrl %</th>
+    <th class="num col-impact">NET Imp</th>
+    <th class="num col-impact">NET %</th>
   </tr></thead><tbody>${html}</tbody>`;
   $('#td-cnt').textContent = `${rows.length} dòng`;
 
@@ -1134,7 +1146,6 @@ function openDrawer(code){
         <span style="font-size:11px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.03em">Chỉ số</span>
         <button data-m="spd" class="${m==='spd'?'on':''}">SPD (tr/ngày)</button>
         <button data-m="bpd" class="${m==='bpd'?'on':''}">BPD (bill/ngày)</button>
-        <button data-m="pct" class="${m==='pct'?'on':''}">% Net</button>
       </div>
       <button class="close" id="d-close">×</button>
     </div>
@@ -1283,6 +1294,7 @@ function buildStoreTable(code){
       <td class="num" style="font-size:12px;padding:4px 3px">${fmtNum(bpd,1)}</td>
       <td class="num" style="font-size:12px;padding:4px 3px">${fmtNum(apd,1)}</td>
       <td class="num ${signCls(pct)}" style="font-size:12px;padding:4px 3px">${fmtPct(pct)}</td>
+      <td colspan="2"></td>
     </tr>`;
     }
     return html;
@@ -1307,9 +1319,11 @@ function buildStoreTable(code){
       <td class="num">${fmtNum(cBaseV,1)}</td>
       <td class="num">${fmtNum(cActualV,1)}</td>
       <td class="num ${signCls(pctCtrl)}">${fmtPct(pctCtrl)}</td>
+      <td class="num ${signCls(netV)}"><b>${fmt(netV)}</b></td>
+      <td class="num ${signCls(pctV)}"><b>${fmtPct(pctV)}</b></td>
     </tr>
     <tr class="wk-detail" data-w="${w}" style="display:none">
-      <td colspan="7" style="background:#F8FAFC;padding:5px 12px;font-size:12px;color:var(--ink-2)">
+      <td colspan="9" style="background:#F8FAFC;padding:5px 12px;font-size:12px;color:var(--ink-2)">
         <b>Store Control (${ctrls.length})</b> — ${weekDateRange(code, w)}
       </td>
     </tr>
@@ -1325,6 +1339,8 @@ function buildStoreTable(code){
     <th class="num col-before">Ctrl Base</th>
     <th class="num col-after">Ctrl Actual</th>
     <th class="num">%Imp Ctrl</th>
+    <th class="num col-net">NET Imp</th>
+    <th class="num col-net">NET %</th>
   </tr></thead><tbody>${rows}</tbody>`;
 
   $('#d-tbl').querySelectorAll('tr.wk-row').forEach(tr=>{
@@ -1472,6 +1488,12 @@ function bindEvents(){
     state.chartMetric = b.dataset.m;
     $('#metric-seg').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));
     renderAll();
+  }));
+  // Graph-only metric toggle (SPD / BPD / % Net) — chỉ affect biểu đồ
+  $('#chart-metric-seg').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
+    state.chartMetric = b.dataset.m;
+    $('#chart-metric-seg').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));
+    renderChart(selectedCodes());
   }));
   $('#tbl-search').addEventListener('input',e=>{ state.search=e.target.value; renderTable(); });
 }
