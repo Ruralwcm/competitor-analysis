@@ -215,7 +215,7 @@
 <div class="page">
 
   <header class="mast">
-    <h1>Competitor Affect by HaoDT <span class="ver-badge" id="ver-badge">v4.47 · 23/10/2026</span></h1>
+    <h1>Competitor Affect by HaoDT <span class="ver-badge" id="ver-badge">v4.48 · 23/10/2026</span></h1>
     <p class="sub">BHX / WCM / BHX+WCM · LFL W0–W52 · 282 CH</p>
   </header>
 
@@ -346,6 +346,7 @@ const state = {
 };
 const expanded = new Set();
 const twExpanded = new Set();
+const expandedWeeks = new Set();
 let selectedProvince = null; // province selection for Section 2
 let selectedDistrict = null; // district selection for Section 2
 let drawerCode = null;
@@ -1205,7 +1206,8 @@ function openDrawer(code){
   $('#d-metric-seg').querySelectorAll('button').forEach(b=>b.addEventListener('click', ()=>{
     if(state.drawerMetric===b.dataset.m) return;
     state.drawerMetric = b.dataset.m;
-    openDrawer(drawerCode);
+    drawStoreChart(drawerCode);
+    buildStoreTable(drawerCode);
   }));
   drawStoreChart(code);
   buildStoreTable(code);
@@ -1289,7 +1291,7 @@ function buildStoreTable(code){
       const bpd = base!=null ? base/7 : null;
       const apd = act!=null ? act/7 : null;
       const pct = (base && act!=null) ? ((act-base)/base*100) : null;
-      html += `<tr class="wk-detail" data-w="${w}" style="display:none">
+      html += `<tr class="wk-detail" data-w="${w}" style="display:${expandedWeeks.has(w)?'table-row':'none'}">
       <td colspan="4" style="padding:4px 8px;font-size:12px;color:var(--ink-2)"><span class="ctrl-site">${c.code}</span> — ${c.name}</td>
       <td class="num" style="font-size:12px;padding:4px 3px">${fmtNum(bpd,1)}</td>
       <td class="num" style="font-size:12px;padding:4px 3px">${fmtNum(apd,1)}</td>
@@ -1312,7 +1314,7 @@ function buildStoreTable(code){
     const pctThreat = baseV && baseV!==0 ? ((actualV - baseV)/baseV*100) : null;
     const pctCtrl = cBaseV && cBaseV!==0 ? ((cActualV - cBaseV)/cBaseV*100) : null;
     rows += `<tr class="wk-row" data-w="${w}" style="cursor:pointer">
-      <td style="white-space:nowrap">${weekDateRange(code, w)}</td>
+      <td style="white-space:nowrap">${W[w]}</td>
       <td class="num">${fmtNum(baseV,1)}</td>
       <td class="num">${fmtNum(actualV,1)}</td>
       <td class="num ${signCls(pctThreat)}">${fmtPct(pctThreat)}</td>
@@ -1322,7 +1324,7 @@ function buildStoreTable(code){
       <td class="num ${signCls(netV)}"><b>${fmt(netV)}</b></td>
       <td class="num ${signCls(pctV)}"><b>${fmtPct(pctV)}</b></td>
     </tr>
-    <tr class="wk-detail" data-w="${w}" style="display:none">
+    <tr class="wk-detail" data-w="${w}" style="display:${expandedWeeks.has(w)?'table-row':'none'}">
       <td colspan="9" style="background:#F8FAFC;padding:5px 12px;font-size:12px;color:var(--ink-2)">
         <b>Store Control (${ctrls.length})</b> — ${weekDateRange(code, w)}
       </td>
@@ -1345,9 +1347,11 @@ function buildStoreTable(code){
 
   $('#d-tbl').querySelectorAll('tr.wk-row').forEach(tr=>{
     tr.addEventListener('click', ()=>{
-      const w = tr.dataset.w;
+      const w = parseInt(tr.dataset.w, 10);
+      if(expandedWeeks.has(w)) expandedWeeks.delete(w);
+      else expandedWeeks.add(w);
+      const show = expandedWeeks.has(w);
       const dets = $('#d-tbl').querySelectorAll(`tr.wk-detail[data-w="${w}"]`);
-      const show = dets.length && dets[0].style.display === 'none';
       dets.forEach(d=>{ d.style.display = show ? 'table-row' : 'none'; });
     });
   });
