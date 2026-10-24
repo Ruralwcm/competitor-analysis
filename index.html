@@ -215,7 +215,7 @@
 <div class="page">
 
   <header class="mast">
-    <h1>Competitor Affect by HaoDT <span class="ver-badge" id="ver-badge">v4.49 · 23/10/2026</span></h1>
+    <h1>Competitor Affect by HaoDT <span class="ver-badge" id="ver-badge">v4.50 · 23/10/2026</span></h1>
     <p class="sub">BHX / WCM / BHX+WCM · LFL W0–W52 · 282 CH</p>
   </header>
 
@@ -1080,7 +1080,7 @@ function renderThreatDetailTable(){
   for(const r of rows){
     html += `<tr class="store-row clickable" data-code="${r.code}">
       <td><span class="code">${r.code}</span> <span class="name">${r.s.n||''}</span></td>
-      <td>${(r.s.t||'').split(' + ').map(t=>`<span class="tag ${thTag(t)}">${t}</span>`).join(' ')}</td>
+      <td><span class="tag ${thTag(r.s.t)}">${r.s.t}</span></td>
       <td>${r.s.w0||'—'}</td>
       <td>${r.s.d||'—'}</td>
       ${kpiCells(r.a, m)}
