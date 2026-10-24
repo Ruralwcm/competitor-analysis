@@ -212,7 +212,7 @@
 <div class="page">
 
   <header class="mast">
-    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.31 · 23/10/2026</span></h1>
+    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.32 · 23/10/2026</span></h1>
     <p class="sub">BHX / WCM / BHX+WCM · LFL W0–W52 · 282 CH</p>
   </header>
 
@@ -1195,13 +1195,26 @@ function openDrawer(code){
 }
 function closeDrawer(){ $('#drawer').classList.remove('open'); $('#overlay').classList.remove('show'); }
 
+function weekDateRange(code, w){
+  const st = DATA.stores[code];
+  const w0 = st && st.w0;
+  if(!w0 || w0.indexOf('/')<0) return W[w];
+  const p = w0.split('/');
+  const base = new Date(+p[2], +p[1]-1, +p[0]);
+  if(isNaN(base.getTime())) return W[w];
+  const start = new Date(base.getTime() + w*7*86400000);
+  const end = new Date(start.getTime() + 6*86400000);
+  const f = d => `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`;
+  return `${W[w]} (${f(start)} - ${f(end)})`;
+}
+
 function drawStoreChart(code){
   const s = DATA.series[code];
   const cm = state.drawerMetric;
   const isS = cm==='spd';
   const labels=[],threat=[],control=[];
   for(let w=state.wfrom; w<=state.wto; w++){
-    labels.push(W[w]);
+    labels.push(weekDateRange(code, w));
     if(isS){
       threat.push((s.as[w]!=null && s.bs[w]!=null) ? (s.as[w]-s.bs[w]) : null);
       control.push((s.cx[w]!=null && s.cs[w]!=null) ? (s.cx[w]-s.cs[w]) : null);
@@ -1245,7 +1258,7 @@ function buildStoreTable(code){
     const pctThreat = baseV && baseV!==0 ? ((actualV - baseV)/baseV*100) : null;
     const pctCtrl = cBaseV && cBaseV!==0 ? ((cActualV - cBaseV)/cBaseV*100) : null;
     rows += `<tr>
-      <td>${W[w]}</td>
+      <td>${weekDateRange(code, w)}</td>
       <td class="num">${fmtNum(baseV,1)}</td>
       <td class="num">${fmtNum(actualV,1)}</td>
       <td class="num ${signCls(pctThreat)}">${fmtPct(pctThreat)}</td>
