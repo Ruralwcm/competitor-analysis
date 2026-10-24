@@ -212,7 +212,7 @@
 <div class="page">
 
   <header class="mast">
-    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.30 · 23/10/2026</span></h1>
+    <h1>Cannibalization — Competitor Analysis <span class="ver-badge" id="ver-badge">v4.31 · 23/10/2026</span></h1>
     <p class="sub">BHX / WCM / BHX+WCM · LFL W0–W52 · 282 CH</p>
   </header>
 
@@ -1260,13 +1260,13 @@ function buildStoreTable(code){
   const ctrlUnit = isS ? '(tr/ngày)' : '(bill/ngày)';
   $('#d-tbl').innerHTML = `<thead><tr>
     <th>Tuần</th>
-    <th class="num col-before">Base ${label}</th>
-    <th class="num col-after">Actual ${label}</th>
+    <th class="num col-before">Base</th>
+    <th class="num col-after">Actual</th>
     <th class="num">%Imp Thr</th>
-    <th class="num col-before">Ctrl Base ${ctrlUnit}</th>
-    <th class="num col-after">Ctrl Actual ${ctrlUnit}</th>
+    <th class="num col-before">Ctrl Base</th>
+    <th class="num col-after">Ctrl Actual</th>
     <th class="num">%Imp Ctrl</th>
-    <th class="num col-net">NET Imp ${ctrlUnit}</th>
+    <th class="num col-net">NET Imp</th>
     <th class="num col-net">NET %</th>
   </tr></thead><tbody>${rows}</tbody>`;
 }
